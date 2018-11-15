@@ -44,8 +44,11 @@ public:
       Reset();
     }
     
-    void SetSpins(std::vector<int> sp){
-      spins_ = sp;
+    void SetSpins(std::vector<int> spins){
+      spins_ = spins;
+    }
+    void SetDimers(std::vector<int> dimers){
+      dimers_ = dimers;
     }
     void Reset(){
       // Reset the configuration into the W=(0,0) topological sector
