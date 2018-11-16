@@ -9,7 +9,7 @@
 #include <random>
 #include <math.h> 
 #include "rvb.hpp"
-
+//#include "stats.hpp"
 template<class Lattice> class QMC{
 
 private:
@@ -22,12 +22,11 @@ private:
   std::vector<int> TransitionGraph_;
   
 public:
-  std::vector<double> SpinSpinCorrelation_;
+  std::vector<std::vector<double> > SpinSpinCorrelation_;
   std::vector<double> DimerDimerCorrelation_;
-  std::vector<double> SpinSpinCorrelation_Var_;
   std::vector<double> DimerDimerCorrelation_Var_;
-  std::vector<double> SpinSpinCorrelation_Avg_;
   std::vector<double> DimerDimerCorrelation_Avg_;
+
 
   //int D_; //dimension
   int Nspins_; //total number of sites
@@ -41,16 +40,8 @@ public:
 
   void Init(int seedQMC){
     Nspins_ = lattice_.Nsites();
-    SpinSpinCorrelation_.resize(Nspins_-1);
-    SpinSpinCorrelation_Avg_.resize(Nspins_-1);
-    SpinSpinCorrelation_Var_.resize(Nspins_-1);
-    std::fill(SpinSpinCorrelation_.begin(), SpinSpinCorrelation_.end(), 0.0);
-    std::fill(SpinSpinCorrelation_Avg_.begin(), SpinSpinCorrelation_Avg_.end(), 0.0);
-    std::fill(SpinSpinCorrelation_Var_.begin(), SpinSpinCorrelation_Var_.end(), 0.0);
-    
-    //Ndimers_ = int(lattice_.Nlinks()/2);
-    //ket_.PrintSpins();
-    //bra_.PrintSpins();
+    //SpinSpinCorrelation_.resize(lattice_.LinSize()-1);
+    //std::fill(SpinSpinCorrelation_.begin(), SpinSpinCorrelation_.end(), 0.0);
     
     TransitionGraph_.resize(lattice_.Nlinks());
     rgen_.seed(seedQMC);
@@ -61,15 +52,10 @@ public:
     ket_.Reset();
     bra_.SetSpins(ket_.spins_);
     bra_.SetDimers(ket_.dimers_);
-    //bra_.Reset();
   }
    
   void GetTransitionGraph(){
     for(int i=0;i<lattice_.Nlinks();i++){ 
-      //if (ket_.dimers_[i] == bra_.dimers_[i])
-      //  TransitionGraph_[i] = 0;
-      //else
-      //  TransitionGraph_[i] = 1;
       TransitionGraph_[i] = ket_.dimers_[i] + bra_.dimers_[i];
     }
   }
@@ -112,7 +98,6 @@ public:
       Sweep();
       GetTransitionGraph();
       GetSpinSpinCorrelation();
-      UpdateMeasurement(i+1,SpinSpinCorrelation_Avg_,SpinSpinCorrelation_Var_,SpinSpinCorrelation_);
     }
   }
 
@@ -122,7 +107,6 @@ public:
     int plaq;
 
     //TODO 3d CHANGE
-    //bra_.Print();
     for(int p=0;p<Nspins_;p++){
       plaq = dist(rgen_);
       ket_.BondUpdate(plaq);
@@ -138,39 +122,6 @@ public:
   }
 
   
-  void UpdateMeasurement(int count,std::vector<double> &avg,std::vector<double> &M2,std::vector<double> &newvalue){
-    //count += 1;
-    //for (int i=0;i<avg.size();i++){
-    //  avg[i] += newvalue[i];
-    //}
-    std::vector<double> delta,delta2;
-    delta.resize(avg.size());
-    delta2.resize(avg.size());
-    
-    for (int i=0;i<avg.size();i++){
-      delta[i] = newvalue[i] - avg[i];
-      avg[i] += delta[i] / float(count);
-      delta2[i] = newvalue[i] - avg[i];
-      M2[i] += delta[i] * delta2[i];
-    }
-  }
-
-  void GetSpinSpinCorrelation() {
-    bool flag;
-    for(int x=1;x<lattice_.LinSize();x++){
-      flag = CheckLoopSharing(8,8+x); 
-      if (flag==false){
-        SpinSpinCorrelation_[x-1] = 0.0;
-      }
-      else{
-        if (x % 2 == 0)
-          SpinSpinCorrelation_[x-1] = 0.75;
-        else
-          SpinSpinCorrelation_[x-1] = -0.75;
-      }
-    }
-  }
-
   bool CheckLoopSharing(int siteA,int siteB){
     std::vector<int> TransitionTMP;
     TransitionTMP.resize(lattice_.Nlinks());
@@ -202,6 +153,26 @@ public:
     return flag;
   }
 
+
+
+  void GetSpinSpinCorrelation() {
+    bool flag;
+    std::vector<double> tmp(lattice_.LinSize()-1);
+    for(int x=1;x<lattice_.LinSize();x++){
+      flag = CheckLoopSharing(0,x); 
+      if (flag==false){
+        tmp[x-1] = 0.0;
+      }
+      else{
+        if (x % 2 == 0)
+          tmp[x-1] = 0.75;
+        else
+          tmp[x-1] = -0.75;
+      }
+    }
+    SpinSpinCorrelation_.push_back(tmp);//SpinSpinCorrelation_);
+    //NNcorrelation_.push_back(SpinSpinCorrelation_[0]);
+  }
 
 
 
