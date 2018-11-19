@@ -6,6 +6,7 @@
 #include "mpi.h"
 #include <ctime>
 #include <boost/format.hpp>
+//#include "parameters.hpp"
 
 int main(int argc, char* argv[]){
   
@@ -16,30 +17,24 @@ int main(int argc, char* argv[]){
   int totalnodes;
   MPI_Comm_size(MPI_COMM_WORLD,&totalnodes);
 
+  
 
-  int D = 2;
-  int L = 16;
-
-  int seedQMC= 13220+13*mynode;
-  int seedBRA= 16382+15*mynode;
-  int seedKET= 18209+17*mynode;
-  int nburn = 1000;
-  int nsamples = 1000000; 
-  int nsamples_node = (std::ceil(double(nsamples) / double(totalnodes)));
+  Parameters pars(totalnodes,mynode);
+  int nsamples_node = (std::ceil(double(pars.nMC_) / double(totalnodes)));
   std::string foutName;
-
+  
   typedef SquareLattice Lattice;
-  SquareLattice lattice(L);
+  SquareLattice lattice(pars.L_);
   //lattice.PrintLattice();
   
-  QMC<Lattice> qmc(lattice,seedQMC,seedBRA,seedKET);    
-  qmc.QMCrun(nburn,nsamples_node);
+  QMC<Lattice> qmc(lattice,pars);;    
+  qmc.QMCrun();
   
 
-  Stats stats(nsamples);
+  Stats stats(pars.nMC_);
   
   // Spin-Spin Correlation Function
-  foutName = "data/2dSquareRVB_SpinSpinCorrelation_L"+boost::str(boost::format("%d") % L)+".txt";
+  foutName = "data/2dSquareRVB_SpinSpinCorrelation_L"+boost::str(boost::format("%d") % pars.L_)+".txt";
   std::ofstream fout(foutName);
   stats.SimpleStat(qmc.SpinSpinCorrelation_);
   stats.SaveVectorStats(fout);

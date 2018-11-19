@@ -1,9 +1,6 @@
 #ifndef STATS_HPP
 #define STATS_HPP
 
-//rvb.cpp
-//Class that build the rvb state as a dimer + spin
-
 #include <vector>
 #include <iostream>
 #include <random>
@@ -28,7 +25,6 @@ private:
   std::vector<double> vector_avg_;
   std::vector<double> vector_err_;
   
-
 public:
   //Functions
   Stats(int Nmeasurements):Nmeasurements_(Nmeasurements){
@@ -62,7 +58,6 @@ public:
 
   void SimpleStat(std::vector<std::vector<double> > &data){
    
-    //std::ofstream fout("prova.txt");
     int num_obs = data[0].size();
     vector_local_avg_.resize(data[0].size());
     vector_local_var_.resize(data[0].size());
@@ -94,21 +89,12 @@ public:
     for(int j=0;j<vector_local_avg_.size();j++){
       vector_local_var_[j] = m2[j] / double(data.size() - 1);
       vector_local_err_[j] = sqrt(m2[j] / double(data.size()*(data.size() - 1)));
-      //printf("Expectation value = %.10f  +-  %.10f\n",vector_avg_[j],vector_err_[j]);
     }
-    //double error_s = 0.0;
-    //double average_s = 0.0;
-    //std::vector<double> error(data[0].size());
-    //std::vector<double> average(data[0].size());
-    //std::fill(average.begin(),average.end(),0.0);
-    //std::fill(error.begin(),error.end(),0.0);
   
     MPI_Reduce(&vector_local_avg_[0],&vector_avg_[0],vector_avg_.size(),MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
     MPI_Reduce(&vector_local_err_[0],&vector_err_[0],vector_err_.size(),MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); 
 
     for(int j=0;j<vector_avg_.size();j++){ 
-      //MPI_Reduce(&vector_avg_[j],&average[j],1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
-      //MPI_Reduce(&vector_err_[j]*(&vector_err_[j]),&error[j],1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); 
       if (mynode_ == 0){
         printf("Expectation value = %.10f  +-  %.10f\n",vector_avg_[j]/double(totalnodes_),vector_err_[j]/double(totalnodes_));
       }

@@ -1,15 +1,13 @@
 #ifndef QMC_HPP
 #define QMC_HPP
 
-//rvb.cpp
-//Class that build the rvb state as a dimer + spin
-
 #include <vector>
 #include <iostream>
 #include <random>
 #include <math.h> 
 #include "rvb.hpp"
-//#include "stats.hpp"
+#include "parameters.hpp"
+
 template<class Lattice> class QMC{
 
 private:
@@ -31,22 +29,20 @@ public:
   //int D_; //dimension
   int Nspins_; //total number of sites
   int Ndimers_;
+  int nsamples_node_;
+  int nburn_;
   //Functions
-  QMC(Lattice &lattice,int seedQMC,int seedBra,int seedKet):lattice_(lattice),
-                        bra_(lattice,seedBra),
-                        ket_(lattice,seedKet){
-    Init(seedQMC); 
+  QMC(Lattice &lattice,Parameters &pars):lattice_(lattice),
+                        bra_(lattice,pars.seed_bra_),
+                        ket_(lattice,pars.seed_ket_),
+                        nburn_(pars.nburn_){
+    Nspins_ = lattice_.Nsites();
+    TransitionGraph_.resize(lattice_.Nlinks());
+    rgen_.seed(pars.seed_qmc_);
+    Reset();
+    nsamples_node_ = std::ceil(double(pars.nMC_) / double(pars.totalnodes_));
   }
 
-  void Init(int seedQMC){
-    Nspins_ = lattice_.Nsites();
-    //SpinSpinCorrelation_.resize(lattice_.LinSize()-1);
-    //std::fill(SpinSpinCorrelation_.begin(), SpinSpinCorrelation_.end(), 0.0);
-    
-    TransitionGraph_.resize(lattice_.Nlinks());
-    rgen_.seed(seedQMC);
-    Reset();
-  }
   
   void Reset(){
     ket_.Reset();
@@ -90,11 +86,11 @@ public:
     }
   }
  
-  void QMCrun(int nburn,int nsweeps) {
-    for (int i=0;i<nburn;i++){
+  void QMCrun() {
+    for (int i=0;i<nburn_;i++){
       Sweep();
     }
-    for (int i=0;i<nsweeps;i++){
+    for (int i=0;i<nsamples_node_;i++){
       Sweep();
       GetTransitionGraph();
       GetSpinSpinCorrelation();
@@ -170,8 +166,7 @@ public:
           tmp[x-1] = -0.75;
       }
     }
-    SpinSpinCorrelation_.push_back(tmp);//SpinSpinCorrelation_);
-    //NNcorrelation_.push_back(SpinSpinCorrelation_[0]);
+    SpinSpinCorrelation_.push_back(tmp);
   }
 
 
