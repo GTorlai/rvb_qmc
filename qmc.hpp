@@ -157,8 +157,8 @@ public:
 
   void GetSpinSpinCorrelation() {
     bool flag;
-    std::vector<double> tmp(lattice_.LinSize()-1);
-    for(int x=1;x<lattice_.LinSize();x++){
+    std::vector<double> tmp(lattice_.LinSize()/2);
+    for(int x=1;x<lattice_.LinSize()/2+1;x++){
       flag = CheckLoopSharing(0,x); 
       if (flag==false){
         tmp[x-1] = 0.0;
