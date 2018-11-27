@@ -10,6 +10,8 @@ public:
   
   int D_;
   int L_;
+  int Wx_;
+  int Wy_;
   int nburn_;
   int nMC_;
   int seed_bra_; 
@@ -17,15 +19,18 @@ public:
   int seed_qmc_;  
   int totalnodes_;
   
-  Parameters(int &totalnodes,int &mynode) {
+//  Parameters(int &totalnodes,int &mynode) {
+  Parameters(){ 
     D_ = 2;
-    L_ = 16;
+    L_ = 4;
+    Wx_ = 0;
+    Wy_ = 0;
     nburn_ = 10000;
     nMC_ = 1000000;
-    seed_bra_ = 16382+15*mynode;
-    seed_ket_ = 18209+17*mynode;
-    seed_qmc_ = 13220+13*mynode;
-    totalnodes_ = totalnodes;
+    seed_bra_ = 16382;//+15*mynode;
+    seed_ket_ = 18209;//+17*mynode;
+    seed_qmc_ = 13220;//+13*mynode;
+    //totalnodes_ = totalnodes;
   }
     
   // Read parameters from the command line

@@ -8,19 +8,26 @@ class SquareLattice {
 private:
 
   int L_;
+  int Lx_,Ly_;
   int Nsites_;
-  int Nlinks_;
+  int Nbonds_;
 
 public:
         
-  std::vector<std::vector<int> > Coordinates_;
-  std::vector<std::vector<int> > Neighbours_;
-  std::vector<std::vector<int> > LinksOnPlaquettes_;
-  std::vector<std::vector<int> > SitesOnLinks_; 
-  std::vector<std::vector<int> > LinksOnSites_;
-  SquareLattice(int L):L_(L),
-                       Nsites_(L*L),
-                       Nlinks_(2*L*L){
+  std::vector<std::vector<int> > Coordinates_;        // (x,y) coordinates of each lattice site
+  std::vector<std::vector<int> > neighbours_;         // 4 neighbours of each lattice site
+  std::vector<std::vector<int> > BondsOnPlaquettes_;  // 4 bonds in each plaquette
+  std::vector<std::vector<int> > SitesOnBonds_;       // 2 sites on each bond
+  std::vector<std::vector<int> > BondsOnSites_;       // 4 bonds on each site
+  std::vector<std::vector<int> > SitesOnPlaquettes_;  // 4 sites on each plaquette
+  
+  SquareLattice(int L){
+    
+    L_ = L;
+    Lx_ = L;
+    Ly_ = 2*L;
+    Nsites_ = Lx_*Ly_;  // The factor 2 is for the two replicas
+    Nbonds_ = 2*Nsites_;
     Init();
   
   }  
@@ -29,20 +36,21 @@ public:
 
   inline int Nsites() const {return Nsites_;}
 
-  inline int Nlinks() const {return Nlinks_;}
-
+  inline int Nbonds() const {return Nbonds_;}
 
   void Init(){
     int counter[2]={0,0};
     
     Coordinates_.resize(Nsites_,std::vector<int>(2));
-    Neighbours_.resize(Nsites_,std::vector<int>(4));
-    LinksOnPlaquettes_.resize(Nsites_,std::vector<int>(4));
-    SitesOnLinks_.resize(Nlinks_,std::vector<int>(2));
-    LinksOnSites_.resize(Nsites_,std::vector<int>(4));
-  
-    for (int i=1;i<Nsites_;i++){
-      if ( (counter[0]+1) % L_ == 0){ //end of x-row
+    neighbours_.resize(Nsites_,std::vector<int>(4));
+    BondsOnPlaquettes_.resize(Nsites_,std::vector<int>(4));
+    SitesOnBonds_.resize(Nbonds_,std::vector<int>(2));
+    BondsOnSites_.resize(Nsites_,std::vector<int>(4));
+    SitesOnPlaquettes_.resize(Nsites_,std::vector<int>(4));
+
+    //Coordinates
+    for (int i=1;i<Nsites_/2;i++){
+      if ( (counter[0]+1) % L_ == 0){//end of x-row
         //coordinate[2*i] = 0; //reset
         counter[0]=0;
           if ( (counter[1]+1) % L_ == 0)
@@ -61,43 +69,103 @@ public:
     }
     
     //Neighbours
-    for(int i=0;i<Nsites_;i++) {
-      Neighbours_[i][0]=Index(Coordinates_[i][0]+1,Coordinates_[i][1]);
-      Neighbours_[i][1]=Index(Coordinates_[i][0]  ,Coordinates_[i][1]+1);
-      Neighbours_[i][2]=Index(Coordinates_[i][0]-1,Coordinates_[i][1]);
-      Neighbours_[i][3]=Index(Coordinates_[i][0]  ,Coordinates_[i][1]-1);
+    // Real
+    for(int i=0;i<Nsites_/2;i++) {
+      neighbours_[i][0]=Index(Coordinates_[i][0]+1,Coordinates_[i][1]);
+      neighbours_[i][1]=Index(Coordinates_[i][0]  ,Coordinates_[i][1]+1);
+      neighbours_[i][2]=Index(Coordinates_[i][0]-1,Coordinates_[i][1]);
+      neighbours_[i][3]=Index(Coordinates_[i][0]  ,Coordinates_[i][1]-1);
+    }
+    // Replica
+    for(int i=0;i<Nsites_/2;i++) {
+      neighbours_[Nsites_/2+i][0]=Nsites_/2+Index(Coordinates_[i][0]+1,Coordinates_[i][1]);
+      neighbours_[Nsites_/2+i][1]=Nsites_/2+Index(Coordinates_[i][0]  ,Coordinates_[i][1]+1);
+      neighbours_[Nsites_/2+i][2]=Nsites_/2+Index(Coordinates_[i][0]-1,Coordinates_[i][1]);
+      neighbours_[Nsites_/2+i][3]=Nsites_/2+Index(Coordinates_[i][0]  ,Coordinates_[i][1]-1);
     }
     
-    //4 links on a plaquette
+    //4 bonds on a plaquette
+    //Real
     for(int x=0;x<L_;x++) {
       for(int y=0;y<L_;y++) {
-        LinksOnPlaquettes_[Index(x,y)][0]=2*Index(x,y);
-        LinksOnPlaquettes_[Index(x,y)][3]=2*Index(x,y)+1;
-        LinksOnPlaquettes_[Index(x,y)][1]=2*Index(x+1,y)+1;
-        LinksOnPlaquettes_[Index(x,y)][2]=2*Index(x,y+1);
+        BondsOnPlaquettes_[Index(x,y)][0]=2*Index(x,y);
+        BondsOnPlaquettes_[Index(x,y)][3]=2*Index(x,y)+1;
+        BondsOnPlaquettes_[Index(x,y)][1]=2*Index(x+1,y)+1;
+        BondsOnPlaquettes_[Index(x,y)][2]=2*Index(x,y+1);
       }
     }
-    //4 Links on a site
-    for(int i=0;i<Nsites_;i++) {
-        
-        LinksOnSites_[i][0]=2*i;
-        LinksOnSites_[i][1]=2*i+1;
-        LinksOnSites_[i][2]=2*Neighbours_[i][2];
-        LinksOnSites_[i][3]=2*Neighbours_[i][3]+1;
-    }
-
-    //2 sites on a link
+    //Replica
     for(int x=0;x<L_;x++) {
       for(int y=0;y<L_;y++) {
-        SitesOnLinks_[2*Index(x,y)][0] = Index(x,y);
-        SitesOnLinks_[2*Index(x,y)][1] = Index(x+1,y);
-        SitesOnLinks_[2*Index(x,y)+1][0] = Index(x,y);
-        SitesOnLinks_[2*Index(x,y)+1][1] = Index(x,y+1);
+        BondsOnPlaquettes_[Nsites_/2+Index(x,y)][0]=Nbonds_/2+2*Index(x,y);
+        BondsOnPlaquettes_[Nsites_/2+Index(x,y)][3]=Nbonds_/2+2*Index(x,y)+1;
+        BondsOnPlaquettes_[Nsites_/2+Index(x,y)][1]=Nbonds_/2+2*Index(x+1,y)+1;
+        BondsOnPlaquettes_[Nsites_/2+Index(x,y)][2]=Nbonds_/2+2*Index(x,y+1);
+      }
+    }
+
+    //2 sites on a bond
+    //Real
+    for(int x=0;x<L_;x++) {
+      for(int y=0;y<L_;y++) {
+        if((x+y)%2==0){
+          // Horizontal
+          SitesOnBonds_[2*Index(x,y)][0] = Index(x,y);
+          SitesOnBonds_[2*Index(x,y)][1] = Index(x+1,y);
+          // Vertical
+          SitesOnBonds_[2*Index(x,y)+1][0] = Index(x,y);
+          SitesOnBonds_[2*Index(x,y)+1][1] = Index(x,y+1);
+        }
+        else{
+          // Horizontal
+          SitesOnBonds_[2*Index(x,y)][1] = Index(x,y);
+          SitesOnBonds_[2*Index(x,y)][0] = Index(x+1,y);
+          // Vertical
+          SitesOnBonds_[2*Index(x,y)+1][1] = Index(x,y);
+          SitesOnBonds_[2*Index(x,y)+1][0] = Index(x,y+1);
+        }
+      }
+    }
+    //Replica
+    for(int x=0;x<L_;x++) {
+      for(int y=0;y<L_;y++) {
+        if((x+y)%2==0){
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)][0]   = Nsites_/2+Index(x,y);
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)][1]   = Nsites_/2+Index(x+1,y);
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][0] = Nsites_/2+Index(x,y);
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][1] = Nsites_/2+Index(x,y+1);
+        }
+        else{
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)][1]   = Nsites_/2+Index(x,y);
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)][0]   = Nsites_/2+Index(x+1,y);
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][1] = Nsites_/2+Index(x,y);
+          SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][0] = Nsites_/2+Index(x,y+1);
+        }
+      }
+    }
+
+    //Sites on Plaquettes
+    //Real
+    for(int x=0;x<L_;x++) {
+      for(int y=0;y<L_;y++) {
+        SitesOnPlaquettes_[Index(x,y)][0] = Index(x,y); 
+        SitesOnPlaquettes_[Index(x,y)][1] = Index(x+1,y);
+        SitesOnPlaquettes_[Index(x,y)][2] = Index(x+1,y+1); 
+        SitesOnPlaquettes_[Index(x,y)][3] = Index(x,y+1);
+      }
+    }
+    //Replica
+    for(int x=0;x<L_;x++) {
+      for(int y=0;y<L_;y++) {
+        SitesOnPlaquettes_[Nsites_/2+Index(x,y)][0] = Nsites_/2+Index(x,y); 
+        SitesOnPlaquettes_[Nsites_/2+Index(x,y)][1] = Nsites_/2+Index(x+1,y);
+        SitesOnPlaquettes_[Nsites_/2+Index(x,y)][2] = Nsites_/2+Index(x+1,y+1); 
+        SitesOnPlaquettes_[Nsites_/2+Index(x,y)][3] = Nsites_/2+Index(x,y+1);
       }
     }
   }
 
-//Indexing of coordinates
+  //Indexing of coordinates
   int Index(int x, int y) {
   
     if (x<0) x+= L_;
@@ -110,30 +178,9 @@ public:
   }
   
   //Print Lattice Informations
-  void PrintLattice() {
+  void Print() {
   
       std::cout << std::endl << std::endl << "Printing Indexing of Coordinates..." << std::endl << std::endl;
-  
-      for (int x=0; x<L_; x++) {
-          for (int y=0; y<L_; y++) {
-              std::cout << "Coordinate (" << x << "," << y << ")";
-              std::cout << "  -->  Index: " << Index(x,y) << std::endl;
-          }
-      }
-  
-      std::cout << std::endl << std::endl << std::endl;
-  
-      std::cout << "Printing coordinates of indices..." << std::endl << std::endl;
-      
-      for (int i=0; i<Nsites_; i++) {
-  
-          std::cout << "Index "<<i;
-          std::cout << "  --> Coordinates: (";
-          std::cout << Coordinates_[i][0] <<","<<Coordinates_[i][1]<<")";
-          std::cout << std::endl;
-      }
-      std::cout << std::endl << std::endl << std::endl;
-  
       std::cout << "Printing neighbors..." << std::endl << std::endl;
       
       for (int i=0; i<Nsites_; i++) {
@@ -142,52 +189,52 @@ public:
           std::cout << "  --> Neighbors: ";
           
           for (int j=0; j<4;j++) {
-              std::cout << Neighbours_[i][j] << " , ";
+              std::cout << neighbours_[i][j] << " , ";
           }
           
           std::cout << std::endl;
       }
       std::cout << std::endl << std::endl << std::endl;
       
-      std::cout << "Printing links on plaquettes..." << std::endl << std::endl;
+      std::cout << "Printing Bonds on plaquettes..." << std::endl << std::endl;
    
       for (int i=0; i<Nsites_; i++) {
   
           std::cout << "Plaquette "<<i;
-          std::cout << "  --> Links: ";
+          std::cout << "  --> Bonds: ";
           
           for (int j=0; j<4;j++) {
-              std::cout << LinksOnPlaquettes_[i][j] << " , ";
-          }
-          
-          std::cout << std::endl;
-      }
-      std::cout << std::endl << std::endl << std::endl;
-      
-      std::cout << "Printing sites on links..." << std::endl << std::endl;
-   
-      for (int i=0; i<Nlinks_; i++) {
-  
-          std::cout << "Link "<<i;
-          std::cout << "  --> Sites: ";
-          
-          for (int j=0; j<2;j++) {
-              std::cout << SitesOnLinks_[i][j] << " , ";
+              std::cout << BondsOnPlaquettes_[i][j] << " , ";
           }
           
           std::cout << std::endl;
       }
       std::cout << std::endl << std::endl << std::endl;
 
-      std::cout << "Printing links on sites..." << std::endl << std::endl;
+      std::cout << "Printing sites on plaquettes..." << std::endl << std::endl;
    
       for (int i=0; i<Nsites_; i++) {
   
-          std::cout << "Site "<<i;
-          std::cout << "  --> Links: ";
+          std::cout << "Plaquette "<<i;
+          std::cout << "  --> Sites: ";
           
           for (int j=0; j<4;j++) {
-              std::cout << LinksOnSites_[i][j] << " , ";
+              std::cout << SitesOnPlaquettes_[i][j] << " , ";
+          }
+          
+          std::cout << std::endl;
+      }
+      std::cout << std::endl << std::endl << std::endl;
+      
+      std::cout << "Printing sites on Bonds..." << std::endl << std::endl;
+   
+      for (int i=0; i<Nbonds_; i++) {
+  
+          std::cout << "Link "<<i;
+          std::cout << "  --> Sites: ";
+          
+          for (int j=0; j<2;j++) {
+              std::cout << SitesOnBonds_[i][j] << " , ";
           }
           
           std::cout << std::endl;
