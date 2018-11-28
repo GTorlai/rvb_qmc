@@ -24,9 +24,7 @@ public:
   SquareLattice(int L){
     
     L_ = L;
-    Lx_ = L;
-    Ly_ = 2*L;
-    Nsites_ = Lx_*Ly_;  // The factor 2 is for the two replicas
+    Nsites_ = 2*L*L;//Lx_*Ly_;  // The factor 2 is for the two replicas
     Nbonds_ = 2*Nsites_;
     Init();
   

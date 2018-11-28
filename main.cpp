@@ -6,6 +6,7 @@
 #include <boost/format.hpp>
 #include "parameters.hpp"
 #include "square_lattice.hpp"
+#include "cubic_lattice.hpp"
 #include "rvb.hpp"
 #include "qmc.hpp"
 
@@ -14,17 +15,20 @@ int main(int argc, char* argv[]){
   Parameters pars;
   pars.ReadParameters(argc,argv); 
   
-  typedef SquareLattice Lattice;
-  SquareLattice lattice(pars.L_);
+  //typedef SquareLattice Lattice;
+  typedef CubicLattice Lattice;
+  
+  
+  Lattice lattice(pars.L_);
   //lattice.Print();
   //if(mynode==0){
-  //  lattice.PrintLattice();
+  lattice.Print();
   //}
-  QMC<Lattice> qmc(lattice,pars);;    
-  qmc.QMCrun();
+  //QMC<Lattice> qmc(lattice,pars);;    
+  //qmc.QMCrun();
   
-  Stats stats(pars.nMC_);
-  stats.SimpleStat(qmc.SpinSpinCorrelation_);
+  //Stats stats(pars.nMC_);
+  //stats.SimpleStat(qmc.SpinSpinCorrelation_);
 
 
   //// Spin-Spin Correlation Function

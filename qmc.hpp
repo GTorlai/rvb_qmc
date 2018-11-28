@@ -27,7 +27,12 @@ public:
   int nburn_;
   //int flag_;
   int Wx_,Wy_;
+ 
   
+
+
+
+
   //Functions
   QMC(Lattice &lattice,Parameters &pars):lattice_(lattice),
                         bra_(lattice,pars.seed_bra_),
@@ -76,6 +81,7 @@ public:
     }
     //ket_.print();
     ket_.SpinUpdate(bra_);
+    //PrintTransitionGraph();
     SanityCheck();
     if (ket_.CheckTopologicalSectors(Wx_,Wy_) || bra_.CheckTopologicalSectors(Wx_,Wy_)){
       std::cout<<"WRONG TOPOLOGICAL SECTOR"<<std::endl;
@@ -167,15 +173,15 @@ public:
     }
   }
 
-  void PrintState(RVB &rvb){
+  void PrintState(RVB<Lattice> &rvb){
     for(int y=0;y< lattice_.LinSize(); y++){
       for(int x=0;x< lattice_.LinSize(); x++){
-        if(rvb_.spins_[lattice_.Index(x,y)] == 1)
+        if(rvb.spins_[lattice_.Index(x,y)] == 1)
           PRINT_RED("o");
         else
           PRINT_GREEN("o");
 
-        if(rvb_.VB_[lattice_.Index(x,y)] == lattice_.Index(x+1,y)){
+        if(rvb.VB_[lattice_.Index(x,y)] == lattice_.Index(x+1,y)){
           PRINT_BLUE("---");
         }
         else{
@@ -184,7 +190,7 @@ public:
       }
       std::cout<<std::endl;
       for(int x=0;x< lattice_.LinSize(); x++){
-        if(rvb_.VB_[lattice_.Index(x,y)] == lattice_.Index(x,y+1)){
+        if(rvb.VB_[lattice_.Index(x,y)] == lattice_.Index(x,y+1)){
           PRINT_BLUE("|   ");
         }
         else{

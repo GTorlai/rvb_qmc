@@ -24,7 +24,8 @@ private:
 
 public:
   int numSpins_; //total number of sites
-  int numVB_;
+  int D_;
+  //int numVB_;
   int L_;
   int num_loops_;
 
@@ -40,7 +41,7 @@ public:
   void Init(int seed){
     L_ = lattice_.LinSize();
     numSpins_  = lattice_.Nsites();
-    numVB_ = numSpins_/2;
+    //numVB_ = numSpins_/2;
     spins_.resize(numSpins_);
     VB_.resize(numSpins_);
     rgen_.seed(seed);
@@ -170,7 +171,6 @@ public:
     int siteA,siteB;
     int bondA,bondB;
     int tmp;
-    
 
     for(int i=0;i<numSpins_/2;i++){
       
