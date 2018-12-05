@@ -15,24 +15,26 @@ public:
   int nburn_;
   int nMC_;
   int ratio_;
+  int regionID_;
   int seed_bra_; 
   int seed_ket_;  
   int seed_qmc_;  
   int totalnodes_;
   
-//  Parameters(int &totalnodes,int &mynode) {
-  Parameters(){ 
+  Parameters(int &totalnodes,int &mynode) {
+//  Parameters(){ 
     D_ = 2;
     L_ = 4;
     Wx_ = 0;
     Wy_ = 0;
     ratio_=0;
-    nburn_ = 10000;
-    nMC_ = 1000000;
-    seed_bra_ = 16382;//+15*mynode;
-    seed_ket_ = 18209;//+17*mynode;
-    seed_qmc_ = 13220;//+13*mynode;
-    //totalnodes_ = totalnodes;
+    regionID_=1;
+    nburn_ = 50000;
+    nMC_ = 10000000;
+    seed_bra_ = 16382+15*mynode;
+    seed_ket_ = 18209+17*mynode;
+    seed_qmc_ = 13220+13*mynode;
+    totalnodes_ = totalnodes;
   }
     
   // Read parameters from the command line
@@ -46,6 +48,14 @@ public:
     flag = "-nMC";
     for(int i=1;i<argc;i++){
       if(flag==argv[i]) nMC_=atoi(argv[i+1]);
+    }
+    flag = "-r";
+    for(int i=1;i<argc;i++){
+      if(flag==argv[i]) ratio_=atoi(argv[i+1]);
+    }
+    flag = "-reg";
+    for(int i=1;i<argc;i++){
+      if(flag==argv[i]) regionID_=atoi(argv[i+1]);
     }
   }
 };

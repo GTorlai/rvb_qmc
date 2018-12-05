@@ -35,6 +35,8 @@ public:
 
   inline int Nbonds() const {return Nbonds_;}
 
+  inline int Nplaqs() const {return Nplaqs_;}
+
   void Init(){
     int counter[3]={0,0,0};
     
@@ -68,9 +70,6 @@ public:
       Coordinates_[i][2]=counter[2];
     }
     
-
-
-
     //Neighbours
     // Real
     for(int i=0;i<Nsites_/2;i++) {
@@ -141,21 +140,6 @@ public:
         }
       }
     }
-    
-    
-    
-    
-    
-    
-    
-    //for(int x=0;x<L_;x++) {
-    //  for(int y=0;y<L_;y++) {
-    //    SitesOnPlaquettes_[Nsites_/2+Index(x,y)][0] = Nsites_/2+Index(x,y); 
-    //    SitesOnPlaquettes_[Nsites_/2+Index(x,y)][1] = Nsites_/2+Index(x+1,y);
-    //    SitesOnPlaquettes_[Nsites_/2+Index(x,y)][2] = Nsites_/2+Index(x+1,y+1); 
-    //    SitesOnPlaquettes_[Nsites_/2+Index(x,y)][3] = Nsites_/2+Index(x,y+1);
-    //  }
-    //}
   }
 
   //Indexing of coordinates
@@ -212,22 +196,7 @@ public:
           std::cout << std::endl;
       }
       std::cout << std::endl << std::endl << std::endl;
-      
-  //    std::cout << "Printing Bonds on plaquettes..." << std::endl << std::endl;
-  // 
-  //    for (int i=0; i<Nsites_; i++) {
-  //
-  //        std::cout << "Plaquette "<<i;
-  //        std::cout << "  --> Bonds: ";
-  //        
-  //        for (int j=0; j<4;j++) {
-  //            std::cout << BondsOnPlaquettes_[i][j] << " , ";
-  //        }
-  //        
-  //        std::cout << std::endl;
-  //    }
-  //    std::cout << std::endl << std::endl << std::endl;
-
+  
       std::cout << "Printing sites on plaquettes..." << std::endl << std::endl;
    
       for (int i=0; i<Nplaqs_; i++) {
@@ -242,22 +211,6 @@ public:
           std::cout << std::endl;
       }
       std::cout << std::endl << std::endl << std::endl;
-  //    
-  //    std::cout << "Printing sites on Bonds..." << std::endl << std::endl;
-  // 
-  //    for (int i=0; i<Nbonds_; i++) {
-  //
-  //        std::cout << "Link "<<i;
-  //        std::cout << "  --> Sites: ";
-  //        
-  //        for (int j=0; j<2;j++) {
-  //            std::cout << SitesOnBonds_[i][j] << " , ";
-  //        }
-  //        
-  //        std::cout << std::endl;
-  //    }
-  //    std::cout << std::endl << std::endl << std::endl;
-  //
   }
   
 };

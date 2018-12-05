@@ -24,6 +24,8 @@ public:
   //int numVB_;
   int L_;
   int num_loops_;
+  int ratio_;
+  std::vector<int> regionX_;
 
   std::vector<int> spins_;
   std::vector<int> VB_;
@@ -37,12 +39,12 @@ public:
   void Init(int seed){
     L_ = lattice_.LinSize();
     numSpins_  = lattice_.Nsites();
-    //numVB_ = numSpins_/2;
     spins_.resize(numSpins_);
     VB_.resize(numSpins_);
     rgen_.seed(seed);
     //rgen_.seed();
-    
+    ratio_ = 0;
+
     // Reset the configuration into the trivial topological sector
     for (int i=0;i<numSpins_;i+=2){
       VB_[i]  = lattice_.neighbours_[i][0];
@@ -75,6 +77,14 @@ public:
   void SetState(RVB &rvb){
     SetSpins(rvb.spins_);
     SetVB(rvb.VB_);
+  }
+
+  void SetRegion(std::vector<int> &region){
+    ratio_ = 1;
+    regionX_.resize(region.size());
+    for(int i=0;i<region.size();i++){
+      regionX_[i] = region[i];
+    }
   }
 
   int LocalBondUpdate(int plaq){
@@ -113,15 +123,16 @@ public:
   }
 
   //Spin update compatible with beta
-  void SpinUpdate(RVB &rvb,int &ratio){
+  void SpinUpdate(RVB &rvb){
     std::vector<int> already_updated;
     already_updated.assign(numSpins_,0);
     int next_site,spin_val;
     int num_loops = 0;
     std::uniform_int_distribution<int> distribution(0,1); 
     
-    if (ratio) Swap();  //swap the states
-
+    if (ratio_) {
+      Swap(regionX_);  //swap the states
+    }
     for(int i=0;i<numSpins_;i++){
       if (already_updated[i] == 0) {
         //std::cout<<"Starting spin = S(" << i <<") = "<< spins_[i]<< std::endl;
@@ -160,7 +171,7 @@ public:
     num_loops_ = num_loops;
     rvb.num_loops_ = num_loops;
     
-    if (ratio) Swap();  //unswap the states
+    if (ratio_) Swap(regionX_);  //unswap the states
   }
 
   int Overlap(RVB &rvb) {
@@ -215,21 +226,6 @@ public:
         VB_[replica] = inBondWithSite;
         VB_[inBondWithSite] = replica;
         VB_[inBondWithReplica] = site;
-
-        //if(regionA[bondB] == 1){
-        //  VB_[siteA] = bondB - numSpins_/2;
-        //}
-        //else{
-        //  VB_[siteA] = bondB;
-        //  VB_[bondB] = siteA;
-        //}
-        //if(regionA[bondA] == 1){
-        //  VB_[siteB] = bondA + numSpins_/2;
-        //}
-        //else{
-        //  VB_[siteB] = bondA;
-        //  VB_[bondA] = siteB;
-        //}
       }
     }
   }
@@ -300,73 +296,6 @@ public:
   }//printTOPO
 
 
-
-    //void PrintSpins(){
-    //  for(int y=0;y< lattice_.LinSize(); y++){
-    //    for(int x=0;x< lattice_.LinSize(); x++){
-    //      if(spins_[lattice_.Index(x,y)] == 1)
-    //        PRINT_RED("+");
-    //      else
-    //        PRINT_GREEN("-");
-    //      std::cout<<"  ";
-    //    }
-    //    std::cout<<std::endl;
-    //  }
-    //  std::cout<<std::endl<<std::endl;
-    //}
-
-    //void Print(){
-    //  for(int y=0;y< lattice_.LinSize(); y++){
-    //    for(int x=0;x< lattice_.LinSize(); x++){
-    //      if(spins_[lattice_.Index(x,y)] == 1)
-    //        PRINT_RED("o");
-    //      else
-    //        PRINT_GREEN("o");
-
-    //      if(dimers_[lattice_.LinksOnSites_[lattice_.Index(x,y)][0]]==1){
-    //        PRINT_BLUE("---");
-    //      }
-    //      else{
-    //        std::cout<<"   ";
-    //      }
-    //    }
-    //    std::cout<<std::endl;
-    //    for(int x=0;x< lattice_.LinSize(); x++){
-    //      if(dimers_[lattice_.LinksOnSites_[lattice_.Index(x,y)][1]]==1){
-    //        PRINT_BLUE("|   ");
-    //      }
-    //      else{
-    //        std::cout<<"    ";
-    //      }
-    //    }
-    //    std::cout<<std::endl;
- 
-    //  }
-    //  std::cout<<std::endl<<std::endl;
-    //}
-
-    //
-    //  
-    //void TestBondUpdate(int plaq){
-    //
-    //  std::cout<<" BOND UPDATE: attempt on plaquette "<< plaq;
-    //  std::vector<int> links;
-    //  for(int i=0; i<4; i++){
-    //    if(dimers_[lattice_.LinksOnPlaquettes_[plaq][i]] == 1)
-    //      links.push_back(lattice_.LinksOnPlaquettes_[plaq][i]);
-    //  }
-    //  
-    //  //std::cout<<"Number of dimers = " << tmp << "   ";
-    //  if ((links.size() == 2) && (spins_[lattice_.SitesOnLinks_[links[0]][0]] != spins_[lattice_.SitesOnLinks_[links[1]][0]])){
-    //    for (int i=0; i<4; i++){
-    //      dimers_[lattice_.LinksOnPlaquettes_[plaq][i]] = 1 - dimers_[lattice_.LinksOnPlaquettes_[plaq][i]];
-    //    }
-    //    std::cout<< " ACCEPTED" << std::endl;
-    //    Print();
-    //  }
-    //  else std::cout<< " REJECTED" << std::endl;
-    //}
- 
 };
 
 #endif

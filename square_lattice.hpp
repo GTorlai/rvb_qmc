@@ -211,7 +211,17 @@ public:
     return L_*y+x;
   
   }
- 
+  
+  void SaveRegion(std::ofstream &fout){
+    // Printi cylindrical regions
+    for(int y=0;y<L_;y++) {
+      for(int x=0;x<L_;x++) {
+        fout << regionA_[Index(x,y)] << " ";
+      }
+      fout<<std::endl;
+    }
+  }
+
   void PrintRegion(){
    
     std::ofstream fout("regionA.dat");
