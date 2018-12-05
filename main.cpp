@@ -15,20 +15,32 @@ int main(int argc, char* argv[]){
   Parameters pars;
   pars.ReadParameters(argc,argv); 
   
-  //typedef SquareLattice Lattice;
-  typedef CubicLattice Lattice;
-  
+  typedef SquareLattice Lattice;
+  //typedef CubicLattice Lattice;
   
   Lattice lattice(pars.L_);
   //lattice.Print();
   //if(mynode==0){
-  lattice.Print();
+  //lattice.Print();
+  lattice.PrintRegion();
   //}
-  //QMC<Lattice> qmc(lattice,pars);;    
-  //qmc.QMCrun();
+  QMC<Lattice> qmc(lattice,pars);;    
+  qmc.QMCrun();
+  //
+  Stats stats(pars.nMC_);
   
-  //Stats stats(pars.nMC_);
-  //stats.SimpleStat(qmc.SpinSpinCorrelation_);
+  std::cout<<" Spin-Spin Correlation Function " << std::endl<<std::endl;
+  stats.SimpleStat(qmc.SpinSpinCorrelation_);
+  for(int j=0;j<stats.vector_local_avg_.size();j++){ 
+    printf("Expectation value = %.10f  +-  %.10f\n",stats.vector_local_avg_[j]/double(stats.totalnodes_),std::sqrt(stats.vector_local_err_[j]));
+  }
+  std::cout<<std::endl;
+  std::cout<<" Renyi Entanglement Entropy " << std::endl<<std::endl;
+  stats.SimpleStat(qmc.RenyiEntropy_);
+  for(int j=0;j<stats.vector_local_avg_.size();j++){ 
+    printf("Expectation value = %.10f  +-  %.10f\n",(stats.vector_local_avg_[j]/double(stats.totalnodes_)),std::sqrt(stats.vector_local_err_[j]));
+  }
+  std::cout<<std::endl;
 
 
   //// Spin-Spin Correlation Function

@@ -16,22 +16,23 @@ private:
   RVB<Lattice> bra_;
   RVB<Lattice> ket_;
   std::mt19937 rgen_;
+  
+  std::vector<std::vector<int> > regionA_;
+  std::vector<std::vector<int> > regionX_;
+  int ratio_;
 
 public:
   std::vector<std::vector<double> > SpinSpinCorrelation_;
-
+  std::vector<std::vector<double> > RenyiEntropy_;
 
   int numSpins_; //total number of sites
+  int numPlaqs_; //total number of plaquettes
   int Ndimers_;
   int nsamples_node_;
   int nburn_;
   //int flag_;
   int Wx_,Wy_;
- 
-  
-
-
-
+  int nloops_den,nloops_num;
 
   //Functions
   QMC(Lattice &lattice,Parameters &pars):lattice_(lattice),
@@ -39,8 +40,10 @@ public:
                         ket_(lattice,pars.seed_ket_),
                         nburn_(pars.nburn_){
     numSpins_ = lattice_.Nsites();
+    numPlaqs_ = lattice_.Nplaqs();
     Wx_ = pars.Wx_;
     Wy_ = pars.Wy_;
+    ratio_ = pars.ratio_;
     rgen_.seed(pars.seed_qmc_);
     nsamples_node_ = std::ceil(double(pars.nMC_));// / double(pars.totalnodes_));
     Init();
@@ -54,6 +57,18 @@ public:
     ket_.printTOPO();
     std::cout<<"Bra topological sector: ";
     bra_.printTOPO();
+  
+    // Generate the regions for entanglement entropy
+    for(int w=1;w<lattice_.LinSize();w++){
+      lattice_.BuildRegionCylinder(w);
+      regionA_.push_back(lattice_.regionA_);
+    }
+    if (ratio_){
+      for(int w=1;w<lattice_.LinSize()-1;w++){
+        lattice_.BuildRegionCylinder(w);
+        regionX_.push_back(lattice_.regionA_);
+      }
+    }
   }
  
   void QMCrun() {
@@ -64,16 +79,15 @@ public:
       //std::cout<<"Sweep # "<<i<<std::endl<<std::endl;
       Sweep();
       GetSpinSpinCorrelation();
+      GetEntanglementEntropy(); 
     }
   }
 
   void Sweep(){
-    //TODO 3d CHANGE
-    std::uniform_int_distribution<int> dist(0,numSpins_-1);
+    std::uniform_int_distribution<int> dist(0,numPlaqs_-1);
     int plaq;
 
-    //TODO 3d CHANGE
-    for(int p=0;p<numSpins_;p++){
+    for(int p=0;p<numPlaqs_/2;p++){
       plaq = dist(rgen_);
       ket_.LocalBondUpdate(plaq);
       plaq = dist(rgen_);
@@ -128,7 +142,18 @@ public:
     SpinSpinCorrelation_.push_back(tmp);
   }
 
-
+  void GetEntanglementEntropy(){
+    //Measure the swap operator
+    std::vector<double> tmp(regionA_.size());
+    nloops_den = ket_.Overlap(bra_);
+    for(int i=0;i<regionA_.size();i++){
+      ket_.Swap(regionA_[i]);
+      nloops_num = ket_.Overlap(bra_);
+      ket_.Swap(regionA_[i]);
+      tmp[i] = 1.0*std::pow(2,nloops_num-nloops_den);
+    }
+    RenyiEntropy_.push_back(tmp);
+  }
 
 
 

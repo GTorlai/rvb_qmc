@@ -14,6 +14,7 @@ public:
   int Wy_;
   int nburn_;
   int nMC_;
+  int ratio_;
   int seed_bra_; 
   int seed_ket_;  
   int seed_qmc_;  
@@ -25,6 +26,7 @@ public:
     L_ = 4;
     Wx_ = 0;
     Wy_ = 0;
+    ratio_=0;
     nburn_ = 10000;
     nMC_ = 1000000;
     seed_bra_ = 16382;//+15*mynode;

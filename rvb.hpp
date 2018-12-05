@@ -10,10 +10,6 @@
 
 //#include "hypercube.hpp"
 #include "square_lattice.hpp"
-#define PRINT_RED(x) std::cout << "\033[1;31m" << x << "\033[0m"   //<< " "
-#define PRINT_BLUE(x) std::cout << "\033[1;34m" << x << "\033[0m"  //<< " "
-#define PRINT_GREEN(x) std::cout << "\033[1;32m" << x << "\033[0m" //<< " "
-
 
 template<class Lattice> class RVB{
 
@@ -47,7 +43,7 @@ public:
     rgen_.seed(seed);
     //rgen_.seed();
     
-    // Reset the configuration into the W=(0,0) topological sector
+    // Reset the configuration into the trivial topological sector
     for (int i=0;i<numSpins_;i+=2){
       VB_[i]  = lattice_.neighbours_[i][0];
       VB_[lattice_.neighbours_[i][0]]= i;
@@ -117,14 +113,14 @@ public:
   }
 
   //Spin update compatible with beta
-  void SpinUpdate(RVB &rvb){
+  void SpinUpdate(RVB &rvb,int &ratio){
     std::vector<int> already_updated;
     already_updated.assign(numSpins_,0);
     int next_site,spin_val;
     int num_loops = 0;
     std::uniform_int_distribution<int> distribution(0,1); 
     
-    //if (ratioON == 1 ) SWAP();  //swap the states
+    if (ratio) Swap();  //swap the states
 
     for(int i=0;i<numSpins_;i++){
       if (already_updated[i] == 0) {
@@ -163,43 +159,77 @@ public:
     //Save the number of loops
     num_loops_ = num_loops;
     rvb.num_loops_ = num_loops;
+    
+    if (ratio) Swap();  //unswap the states
   }
- 
+
+  int Overlap(RVB &rvb) {
+    std::vector<int> already_counted;
+    already_counted.assign(numSpins_,0);
+    int next_site;
+    int num_loops = 0;
+
+    for(int i=0;i<numSpins_;i++){
+      if (already_counted[i] == 0) {
+        already_counted[i] = 1;
+        next_site = VB_[i];
+        while(already_counted[next_site] == 0){
+          if(already_counted[next_site] == 1) 
+            std::cout<<"Loop Error 1"<<std::endl;
+          else 
+            already_counted[next_site] = 1;
+          next_site = rvb.VB_[next_site];
+          //std::cout<<"Next spin = S(" << next_site<<") = "<< spins_[next_site] << std::endl;
+          if(already_counted[next_site] != 1)
+            already_counted[next_site] = 1;
+          else break;
+          next_site = VB_[next_site];
+        }
+        num_loops++;
+      }
+    }
+    return num_loops;
+  }
 
   void Swap(std::vector<int> regionA) {
     
-    int siteA,siteB;
-    int bondA,bondB;
+    int site,replica;
+    int inBondWithSite,inBondWithReplica;
     int tmp;
 
     for(int i=0;i<numSpins_/2;i++){
       
       if(regionA[i] == 1){
-        siteA = i;
-        siteB = numSpins_/2 + i;
+        site = i;
+        replica = numSpins_/2 + i;
         // Swap the spin state
-        tmp = spins_[siteB];
-        spins_[siteB] = spins_[siteA];
-        spins_[siteA] = tmp;
+        tmp = spins_[site];
+        spins_[site] = spins_[replica];
+        spins_[replica] = tmp;
 
         //Swap the bond state
-        bondA = VB_[siteA];
-        bondB = VB_[siteB];
-        
-        if(regionA[bondB] == 1){
-          VB_[siteA] = bondB - numSpins_/2;
-        }
-        else{
-          VB_[siteA] = bondB;
-          VB_[bondB] = siteA;
-        }
-        if(regionA[bondA] == 1){
-          VB_[siteB] = bondA + numSpins_/2;
-        }
-        else{
-          VB_[siteB] = bondA;
-          VB_[bondA] = siteB;
-        }
+        inBondWithSite    = VB_[site];
+        inBondWithReplica = VB_[replica];
+      
+        VB_[site]    = inBondWithReplica;
+        VB_[replica] = inBondWithSite;
+        VB_[inBondWithSite] = replica;
+        VB_[inBondWithReplica] = site;
+
+        //if(regionA[bondB] == 1){
+        //  VB_[siteA] = bondB - numSpins_/2;
+        //}
+        //else{
+        //  VB_[siteA] = bondB;
+        //  VB_[bondB] = siteA;
+        //}
+        //if(regionA[bondA] == 1){
+        //  VB_[siteB] = bondA + numSpins_/2;
+        //}
+        //else{
+        //  VB_[siteB] = bondA;
+        //  VB_[bondA] = siteB;
+        //}
       }
     }
   }

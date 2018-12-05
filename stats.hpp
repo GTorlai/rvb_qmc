@@ -11,6 +11,8 @@ class Stats{
 
 private:
   
+  
+public:
   int Nmeasurements_;
   int Nbins_;
   int totalnodes_;
@@ -24,8 +26,6 @@ private:
   std::vector<double> vector_local_err_;
   std::vector<double> vector_avg_;
   std::vector<double> vector_err_;
-  
-public:
   //Functions
   Stats(int Nmeasurements):Nmeasurements_(Nmeasurements){
     mynode_=0;
@@ -103,9 +103,9 @@ public:
     //  }
     //}
     
-    for(int j=0;j<vector_local_avg_.size();j++){ 
-      printf("Expectation value = %.10f  +-  %.10f\n",vector_local_avg_[j]/double(totalnodes_),std::sqrt(vector_local_err_[j]));
-    }
+    //for(int j=0;j<vector_local_avg_.size();j++){ 
+    //  printf("Expectation value = %.10f  +-  %.10f\n",vector_local_avg_[j]/double(totalnodes_),std::sqrt(vector_local_err_[j]));
+    //}
   }
 
   //void BinnedStat(std::vector<std::vector<double> > &data){
