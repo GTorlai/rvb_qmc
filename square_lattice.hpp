@@ -174,7 +174,6 @@ public:
       }
     }
   }
-
   
   void BuildRegionCylinder(int width){
     if(width == L_){
@@ -200,6 +199,38 @@ public:
     }
   }
 
+  //void SaveRegions(std::string &path,std::string &geometry,int &ratio){
+  //  std::string fname;
+  //  for(int w=1;w<L_;w++){
+  //    if(geometry == "cylinder")      BuildRegionCylinder(w);
+  //    else if (geometry == "square")  BuildRegionRectangle(w,w,0,0);
+  //    else {
+  //      std::cout<<"Entanglement region not recognized"<<std::endl;
+  //      exit(0);
+  //    }
+  //    fname = path + "regionA_" + std::to_string(w) + ".txt";
+  //    std::ofstream fout(fname);
+  //    SaveRegion(fout);
+  //    fout.close();
+  //  }
+  //  if(ratio){
+  //    for(int w=2;w<L_;w++){
+  //      if(geometry == "cylinder")      BuildRegionCylinder(w-1);
+  //      else if (geometry == "square")  BuildRegionRectangle(w-1,w-1,0,0);
+  //      else {
+  //        std::cout<<"Entanglement region not recognized"<<std::endl;
+  //        exit(0);
+  //      }
+  //      fname = path + "regionX_" + std::to_string(w) + ".txt";
+  //      std::ofstream fout(fname);
+  //      SaveRegion(fout);
+  //      fout.close();
+  //    }
+  //  } 
+
+  //}
+
+
   //Indexing of coordinates
   int Index(int x, int y) {
   
@@ -212,15 +243,15 @@ public:
   
   }
   
-  void SaveRegion(std::ofstream &fout){
-    // Printi cylindrical regions
-    for(int y=0;y<L_;y++) {
-      for(int x=0;x<L_;x++) {
-        fout << regionA_[Index(x,y)] << " ";
-      }
-      fout<<std::endl;
-    }
-  }
+  //void SaveRegion(std::ofstream &fout){
+  //  // Printi cylindrical regions
+  //  for(int y=0;y<L_;y++) {
+  //    for(int x=0;x<L_;x++) {
+  //      fout << regionA_[Index(x,y)] << " ";
+  //    }
+  //    fout<<std::endl;
+  //  }
+  //}
 
   void PrintRegion(){
    

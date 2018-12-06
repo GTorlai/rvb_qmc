@@ -7,6 +7,7 @@
 #include <math.h> 
 #include <mpi.h>
 #include <fstream>
+#include "utils.hpp"
 class Stats{
 
 private:
@@ -23,6 +24,7 @@ public:
   double scalar_local_var_;
   double scalar_avg_;
   double scalar_err_;
+  double size_;
 
   std::vector<double> vector_local_avg_;
   std::vector<double> vector_local_var_;
@@ -50,36 +52,26 @@ public:
     double delta  = 0.0;
     double delta2 = 0.0;
     double m2 = 0.0;
-
-    for(int i=0;i<data.size();i++){
+    size_ = data.size();
+    for(int i=0;i<size_;i++){
       delta = data[i] - scalar_local_avg_;
       scalar_local_avg_ += delta / double(i+1);
       delta2 = data[i] - scalar_local_avg_;
       m2 += delta * delta2;
     }
 
-    scalar_local_var_ = m2 / double(data.size() - 1);
-    scalar_local_err_ = m2 / double(data.size()*(data.size() - 1));
- 
+    scalar_local_var_ = m2 / double(size_ - 1);
+    scalar_local_err_ = m2 / double(size_*(size_ - 1));
+    //printf("Rank %d - <ratio> = %.10f  +-  %.10f\n",mynode_,scalar_local_avg_,scalar_local_var_);
+
     // NONMPI
     //scalar_avg_ = scalar_local_avg_;//m2 / double(data.size() - 1);
     //scalar_err_ = scalar_local_err_;//sqrt(m2 / double(data.size()*(data.size() - 1)));
+    
     // MPI
-    MPI_Reduce(&scalar_local_avg_,&scalar_avg_,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
-    MPI_Reduce(&scalar_local_err_,&scalar_err_,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); 
-    //printf("Expectation value = %.10f  +-  %.10f\n",scalar_local_avg_,scalar_local_err_);
-    //if(mynode_ == 0) {
-    //  for(int i=0;i<totalnodes_;i++){
-    //    //if(mynode_ == i){
-    //    //  MPI_Send(&scalar_local_avg_, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-    //    //}
-    //    MPI_Recv(&tmp, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-    //    temp[i]=tmp;
-    //    if(mynode_ == i){
-    //      printf("Expectation value = %.10f  +-  %.10f    (%.10f)\n",scalar_local_avg_,scalar_local_err_,temp[i]);
-    //    }
-    //  }
-    //}
+    //MPI_Reduce(&scalar_local_avg_,&scalar_avg_,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+    //MPI_Reduce(&scalar_local_err_,&scalar_err_,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD); 
+    
   }
 
   void SimpleStat(std::vector<std::vector<double> > &data){

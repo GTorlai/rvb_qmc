@@ -8,7 +8,7 @@
 #include <string>
 #include "rvb.hpp"
 #include "parameters.hpp"
-
+#include "utils.hpp"
 template<class Lattice> class QMC{
 
 private:
@@ -57,9 +57,10 @@ public:
     bra_.SetState(ket_);
   }
  
-  void LoadRegion(int regionID){
+  void LoadRegion(Parameters &pars){
     std::string fname;
-    fname = "regions/regionA_" + std::to_string(regionID) + ".txt";
+    std::string path = SimulationName(pars) + "/regions/";
+    fname = path + "regionA_" + std::to_string(pars.regionID_) + ".txt";
     std::ifstream fin(fname);
     int tmp;
     for(int i=0;i<numSpins_/2;i++){
@@ -69,7 +70,7 @@ public:
     fin.close();
     
     if(ratio_){
-      fname = "regions/regionX_" + std::to_string(regionID) + ".txt";
+      fname = path+"regionX_" + std::to_string(pars.regionID_) + ".txt";
       std::ifstream fin(fname);
       int tmp;
       for(int i=0;i<numSpins_/2;i++){
@@ -151,18 +152,6 @@ public:
     SpinSpinCorrelation_.push_back(tmp);
   }
 
-//  void GetEntanglementEntropy(){
-//    ////Measure the swap operator
-//    std::vector<double> tmp(regionA_.size());
-//    nloops_den = ket_.Overlap(bra_);
-//    for(int i=0;i<regionA_.size();i++){
-//      ket_.Swap(regionA_[i]);
-//      nloops_num = ket_.Overlap(bra_);
-//      ket_.Swap(regionA_[i]);
-//      tmp[i] = 1.0*std::pow(2,nloops_num-nloops_den);
-//    }
-//    RenyiEntropy_.push_back(tmp);
-//  }
   void GetEntanglementEntropy(){
     //Measure the swap operator
     if(ratio_){
@@ -178,12 +167,6 @@ public:
     ket_.Swap(regionA_);
     RenyiEntropy_.push_back(1.0*std::pow(2,nloops_num-nloops_den));
   }
-
-
-
-
-
-
 
 
 

@@ -20,21 +20,25 @@ public:
   int seed_ket_;  
   int seed_qmc_;  
   int totalnodes_;
-  
+  int mynode_;
+  std::string geometry_;
+
   Parameters(int &totalnodes,int &mynode) {
 //  Parameters(){ 
     D_ = 2;
-    L_ = 4;
+    L_ = 8;
     Wx_ = 0;
     Wy_ = 0;
-    ratio_=0;
+    ratio_=1;
     regionID_=1;
     nburn_ = 50000;
-    nMC_ = 10000000;
-    seed_bra_ = 16382+15*mynode;
-    seed_ket_ = 18209+17*mynode;
-    seed_qmc_ = 13220+13*mynode;
+    nMC_ = 100000;
+    seed_bra_ = 16382+1235*mynode;
+    seed_ket_ = 18209+1127*mynode;
+    seed_qmc_ = 13220+1663*mynode;
     totalnodes_ = totalnodes;
+    mynode_ = mynode;
+    geometry_ = "cylinder";
   }
     
   // Read parameters from the command line
