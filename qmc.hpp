@@ -57,10 +57,10 @@ public:
     bra_.SetState(ket_);
   }
  
-  void LoadRegion(Parameters &pars){
+  void LoadRegion(Parameters &pars,int regionID){
     std::string fname;
     std::string path = SimulationName(pars) + "/regions/";
-    fname = path + "regionA_" + std::to_string(pars.regionID_) + ".txt";
+    fname = path + "regionA_" + std::to_string(regionID) + ".txt";
     std::ifstream fin(fname);
     int tmp;
     for(int i=0;i<numSpins_/2;i++){
@@ -70,7 +70,7 @@ public:
     fin.close();
     
     if(ratio_){
-      fname = path+"regionX_" + std::to_string(pars.regionID_) + ".txt";
+      fname = path+"regionX_" + std::to_string(regionID) + ".txt";
       std::ifstream fin(fname);
       int tmp;
       for(int i=0;i<numSpins_/2;i++){

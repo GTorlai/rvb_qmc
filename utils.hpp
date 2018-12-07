@@ -55,50 +55,86 @@ void WriteSimulationInfos(Parameters &pars){
   fout_seed.close();
 }
 
-//void WriteEntanglementRegions(Parameters &pars,Lattice &lattice){
 template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattice &lattice){
   if(pars.mynode_==0){
     std::string fname;
     std::string path = SimulationName(pars) + "/regions/";
-    for(int w=1;w<pars.L_;w++){
-      if(pars.geometry_ == "cylinder")      lattice.BuildRegionCylinder(w);
-      else if (pars.geometry_ == "square")  lattice.BuildRegionRectangle(w,w,0,0);
-      else {
-        std::cout<<"Entanglement region not recognized"<<std::endl;
-        exit(0);
-      }
-      fname = path + "regionA_" + std::to_string(w) + ".txt";
+    lattice.BuildRegionCylinders(pars.reg_inc_);
+    for(int i=0;i<lattice.regions_.size();i++){
+      fname = SimulationName(pars) + "/regions/";
+      fname += "regionA_" + std::to_string(i+1) + ".txt";
       std::ofstream fout(fname);
       for(int y=0;y<pars.L_;y++) {
         for(int x=0;x<pars.L_;x++) {
-          fout << lattice.regionA_[lattice.Index(x,y)] << " ";
+          fout << lattice.regions_[i][lattice.Index(x,y)] << " ";
         }
         fout<<std::endl;
       }
       fout.close();
     }
     if(pars.ratio_){
-      for(int w=2;w<pars.L_;w++){
-        if(pars.geometry_ == "cylinder")      lattice.BuildRegionCylinder(w-1);
-        else if (pars.geometry_ == "square")  lattice.BuildRegionRectangle(w-1,w-1,0,0);
-        else {
-          std::cout<<"Entanglement region not recognized"<<std::endl;
-          exit(0);
-        }
-        fname = path + "regionX_" + std::to_string(w) + ".txt";
+      for(int i=0;i<lattice.regions_.size()-1;i++){
+        fname = SimulationName(pars) + "/regions/";
+        fname += "regionX_" + std::to_string(i+2) + ".txt";
         std::ofstream fout(fname);
         for(int y=0;y<pars.L_;y++) {
           for(int x=0;x<pars.L_;x++) {
-            fout << lattice.regionA_[lattice.Index(x,y)] << " ";
+            fout << lattice.regions_[i][lattice.Index(x,y)] << " ";
           }
           fout<<std::endl;
         }
         fout.close();
       }
+
     }
   }
   MPI_Barrier(MPI_COMM_WORLD);
 }
+
+
+//template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattice &lattice){
+//  if(pars.mynode_==0){
+//    std::string fname;
+//    std::string path = SimulationName(pars) + "/regions/";
+//    for(int w=1;w<pars.L_;w++){
+//      if(pars.geometry_ == "cylinder")      lattice.BuildRegionCylinder(w);
+//      else if (pars.geometry_ == "square")  lattice.BuildRegionRectangle(w,w,0,0);
+//      else {
+//        std::cout<<"Entanglement region not recognized"<<std::endl;
+//        exit(0);
+//      }
+//      fname = path + "regionA_" + std::to_string(w) + ".txt";
+//      std::ofstream fout(fname);
+//      for(int y=0;y<pars.L_;y++) {
+//        for(int x=0;x<pars.L_;x++) {
+//          fout << lattice.regionA_[lattice.Index(x,y)] << " ";
+//        }
+//        fout<<std::endl;
+//      }
+//      fout.close();
+//    }
+//    if(pars.ratio_){
+//      for(int w=2;w<pars.L_;w++){
+//        if(pars.geometry_ == "cylinder")      lattice.BuildRegionCylinder(w-1);
+//        else if (pars.geometry_ == "square")  lattice.BuildRegionRectangle(w-1,w-1,0,0);
+//        else {
+//          std::cout<<"Entanglement region not recognized"<<std::endl;
+//          exit(0);
+//        }
+//        fname = path + "regionX_" + std::to_string(w) + ".txt";
+//        std::ofstream fout(fname);
+//        for(int y=0;y<pars.L_;y++) {
+//          for(int x=0;x<pars.L_;x++) {
+//            fout << lattice.regionA_[lattice.Index(x,y)] << " ";
+//          }
+//          fout<<std::endl;
+//        }
+//        fout.close();
+//      }
+//    }
+//  }
+//  MPI_Barrier(MPI_COMM_WORLD);
+//}
 
 //void MakeDir(std::string &dir_name){
 //  if ( boost::filesystem::exists(dir_name) ){

@@ -21,25 +21,24 @@ int main(int argc, char* argv[]){
   //Parameters
   Parameters pars(totalnodes,mynode);
   pars.ReadParameters(argc,argv);
-  std::cout<<pars.nMC_<<std::endl;
-  for(int k=1;k<pars.L_;k++){
-    
+  
+  typedef SquareLattice Lattice;
+  Lattice lattice(pars.L_);
+  WriteSimulationInfos(pars);
+  WriteEntanglementRegions(pars,lattice);
+  std::cout<<pars.num_reg_<<std::endl;
+  
+  for(int k=1;k<pars.num_reg_;k++){
+     
     if(k==1) pars.ratio_=0;
     else     pars.ratio_=1;
-    pars.regionID_ = k;
+    
     //Create simulation folder
     //SetupSimulationDir(pars);
-    WriteSimulationInfos(pars);
 
-    //Lattice 
-    typedef SquareLattice Lattice;
-    //typedef CubicLattice Lattice;
-    Lattice lattice(pars.L_);
-    WriteEntanglementRegions(pars,lattice); 
-    
     //Quantum Monte Carlo
     QMC<Lattice> qmc(lattice,pars);
-    qmc.LoadRegion(pars);
+    qmc.LoadRegion(pars,k);
     qmc.QMCrun();
     
     //Data Analysis
@@ -48,8 +47,9 @@ int main(int argc, char* argv[]){
  
     //Record
     std::string fname = MeasurementName(pars,"renyi");
+    //std::cout<<fname<<std::endl;
     std::ofstream fout(fname, std::ios_base::app | std::ios_base::out);
-    fout<<pars.regionID_<<" \t";
+    fout<<k<<" \t";
     fout<<std::setprecision(10)<<stats.scalar_local_avg_<<" \t";
     fout<<std::setprecision(10)<<stats.scalar_local_var_<<" \t";
     fout<<stats.size_<<std::endl;

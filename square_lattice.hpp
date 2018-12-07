@@ -6,6 +6,7 @@
 #define PRINT_BLUE(x) std::cout << "\033[1;34m" << x << "\033[0m"  //<< " "
 #define PRINT_GREEN(x) std::cout << "\033[1;32m" << x << "\033[0m" //<< " "
 
+#include "utils.hpp"
 
 class SquareLattice {
 
@@ -27,6 +28,8 @@ public:
   std::vector<std::vector<int> > SitesOnPlaquettes_;  // 4 sites on each plaquette
  
   std::vector<int> regionA_;
+
+  std::vector<std::vector<int> > regions_;
 
   SquareLattice(int L){
     
@@ -198,6 +201,43 @@ public:
       }
     }
   }
+
+ 
+  void BuildRegionCylinders(int increment){
+    std::vector<int> single_region;
+    int num_regions;
+    if (L_ % increment != 0){
+      std::cout<<"Error - linear size not divisible by the increment"<<std::endl;
+      exit(0);
+    }
+    else{
+      num_regions = int((Nsites_/2-L_) / increment);
+      int x=0;
+      int y=0;
+      single_region.assign(Nsites_/2,0);
+      for (int r=0;r<num_regions;r++){
+        for(int i=0;i<increment;i++){
+          single_region[Index(x,y+i)] = 1;
+        }
+        y+=increment;
+        if(y == L_){
+          y=0;
+          x++;
+        }
+        regions_.push_back(single_region);
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+
+
 
   //void SaveRegions(std::string &path,std::string &geometry,int &ratio){
   //  std::string fname;
