@@ -13,7 +13,7 @@ public:
   int Wx_;
   int Wy_;
   int nburn_;
-  int nMC_;
+  long long int nMC_;
   int ratio_;
   int regionID_;
   int seed_bra_; 
@@ -24,14 +24,13 @@ public:
   std::string geometry_;
 
   Parameters(int &totalnodes,int &mynode) {
-//  Parameters(){ 
     D_ = 2;
     L_ = 8;
     Wx_ = 0;
     Wy_ = 0;
     ratio_=1;
     regionID_=1;
-    nburn_ = 50000;
+    nburn_ = 100000;
     nMC_ = 100000;
     seed_bra_ = 16382+1235*mynode;
     seed_ket_ = 18209+1127*mynode;
@@ -51,7 +50,7 @@ public:
     }
     flag = "-nMC";
     for(int i=1;i<argc;i++){
-      if(flag==argv[i]) nMC_=atoi(argv[i+1]);
+      if(flag==argv[i]) nMC_=atoll(argv[i+1]);
     }
     flag = "-r";
     for(int i=1;i<argc;i++){

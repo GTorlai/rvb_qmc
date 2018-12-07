@@ -31,7 +31,7 @@ public:
   int numSpins_; //total number of sites
   int numPlaqs_; //total number of plaquettes
   int Ndimers_;
-  int nsamples_node_;
+  unsigned long long int nsamples_node_;
   int nburn_;
   int Wx_,Wy_;
   int nloops_den,nloops_num;

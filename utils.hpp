@@ -5,14 +5,15 @@
 #include <string>
 #include "parameters.hpp"
 #include <boost/format.hpp>
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 #include <iostream>
 #include "square_lattice.hpp"
 
 std::string SimulationName(Parameters &pars){
   std::string fname;
   //fname  = "../data/sim_";
-  fname = "/Users/gtorlai/Work/Projects/2018/rvb/data/sim";
+  //fname = "/Users/gtorlai/Work/Projects/2018/rvb/data/sim";
+  fname = "sim";
   fname += boost::str(boost::format("%d") % pars.D_) + "D_";
   fname += "L" + boost::str(boost::format("%d") % pars.L_);
   fname += "_W" + boost::str(boost::format("%d") % pars.Wx_)+boost::str(boost::format("%d") % pars.Wy_);
@@ -27,32 +28,6 @@ std::string MeasurementName(Parameters &pars,const char* observable){
   fname += ".txt";
   return fname;
 }
-
-
-void MakeDir(std::string &dir_name){
-  if ( boost::filesystem::exists(dir_name) ){
-    //std::cout<<"The folder already exists!"<<std::endl;
-    //exit(0);
-  }
-  else {
-    boost::filesystem::create_directory(dir_name);
-  }
-}
-
-void SetupSimulationDir(Parameters &pars){
-
-  if(pars.mynode_==0){
-    std::string main_path   = SimulationName(pars);
-    std::string regions_dir = main_path + "/regions/";
-    std::string meas_dir    = main_path + "/measurements/";
-    std::string seed_dir    = main_path + "/seeds/";
-    MakeDir(main_path);
-    MakeDir(regions_dir);
-    MakeDir(meas_dir);
-    MakeDir(seed_dir);
-  }
-}
-
 void WriteSimulationInfos(Parameters &pars){
 
   std::string main_path   = SimulationName(pars);
@@ -100,7 +75,6 @@ template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattic
         }
         fout<<std::endl;
       }
-      //SaveRegion(fout);
       fout.close();
     }
     if(pars.ratio_){
@@ -119,7 +93,6 @@ template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattic
           }
           fout<<std::endl;
         }
-        //SaveRegion(fout);
         fout.close();
       }
     }
@@ -127,192 +100,30 @@ template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattic
   MPI_Barrier(MPI_COMM_WORLD);
 }
 
+//void MakeDir(std::string &dir_name){
+//  if ( boost::filesystem::exists(dir_name) ){
+//    //std::cout<<"The folder already exists!"<<std::endl;
+//    //exit(0);
+//  }
+//  else {
+//    boost::filesystem::create_directory(dir_name);
+//  }
+//}
+
+//void SetupSimulationDir(Parameters &pars){
+//
+//  if(pars.mynode_==0){
+//    std::string main_path   = SimulationName(pars);
+//    std::string regions_dir = main_path + "/regions/";
+//    std::string meas_dir    = main_path + "/measurements/";
+//    std::string seed_dir    = main_path + "/seeds/";
+//    MakeDir(main_path);
+//    MakeDir(regions_dir);
+//    MakeDir(meas_dir);
+//    MakeDir(seed_dir);
+//  }
+//}
 
 
-//std::string TrainingDataName(Parameters & p,std::string &source){
-//
-//    std::string fileName;
-//    fileName = "../data/datasets/";
-//    fileName += source;
-//    //fileName += "/N" + boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "/" + p.model_ + "_N";
-//    fileName += boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "_ind";
-//    fileName += boost::str(boost::format("%d") % p.h_); 
-//    //if (source == "ed_noise"){
-//    //    fileName += "_pR" + boost::str(boost::format("%.2f") % p.pR_);
-//    //    if (p.pR_ == 0.1){
-//    //        fileName += "_pR" + boost::str(boost::format("%.1f") % p.pR_);
-//    //    }
-//    //    fileName += "_pG" + boost::str(boost::format("%.1f") % p.pG_);
-//    //}
-//    //if (source == "amplitude_damping_ed"){
-//    //    fileName += "_pR" + boost::str(boost::format("%.2f") % p.pR_);
-//    //    fileName += "_pG" + boost::str(boost::format("%.1f") % p.pG_);
-//    //}
-//    fileName += "_"+p.basis_+"basis";
-//    fileName += "_train.txt"; 
-//    //std::cout << fileName << std::endl;
-//    return fileName;
-//}
-//
-//std::string WavefunctionName(Parameters & p){
-//    std::string fileName;
-//    fileName = "../data/wavefunctions";//N";
-//    //fileName += boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "/wavefunction_"+p.model_+"_N";
-//    fileName += boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "_ind" + boost::str(boost::format("%d") % p.h_);
-//    fileName += ".txt";
-//    //std::cout<<fileName<<std::endl;
-//    return fileName;
-//}
-//
-//std::string NetworkName(Parameters & p,std::string &source){
-//    std::string fileName;
-//
-//    fileName = "rbmState_rydberg_";
-//    fileName += source;
-//    fileName += "_N" + boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "_nh" + boost::str(boost::format("%d") % p.nh_);
-//    fileName += "_" + p.alg_;
-//    fileName += boost::str(boost::format("%d") % p.cd_); 
-//    fileName += "_nc" + boost::str(boost::format("%d") % p.nc_);
-//    if (p.alg_ == "PT"){
-//        fileName += "_nrep" + boost::str(boost::format("%d") % p.nrep_);
-//    }
-//    fileName += "_" + p.opt_;
-//    if (p.opt_ == "sgd"){
-//        fileName += "_lr";
-//        if (p.lr_ > 0.09) {
-//            fileName += boost::str(boost::format("%.1f") % p.lr_);
-//        }
-//        else if (p.lr_ > 0.009) {
-//            fileName += boost::str(boost::format("%.2f") % p.lr_);
-//        }
-//        else if (p.lr_ > 0.0009) {
-//            fileName += boost::str(boost::format("%.3f") % p.lr_);
-//        }
-//        else if (p.lr_ > 0.00009) {
-//            fileName += boost::str(boost::format("%.4f") % p.lr_);
-//        }
-//        else if (p.lr_ > 0.000009) {
-//            fileName += boost::str(boost::format("%.5f") % p.lr_);
-//        }
-//        fileName += "_reg";
-//        if (p.l2_ > 0.09) {
-//            fileName += boost::str(boost::format("%.1f") % p.lr_);
-//        }
-//        else if (p.l2_ > 0.009) {
-//            fileName += boost::str(boost::format("%.2f") % p.l2_);
-//        }
-//        else if (p.l2_ > 0.0009) {
-//            fileName += boost::str(boost::format("%.3f") % p.l2_);
-//        }
-//        else if (p.l2_ > 0.00009) {
-//            fileName += boost::str(boost::format("%.4f") % p.l2_);
-//        }
-//        else if (p.l2_ > 0.000009) {
-//            fileName += boost::str(boost::format("%.5f") % p.l2_);
-//        }
-//    }
-//    else if (p.opt_ == "adaDelta"){
-//        fileName += "_eps1e-5";
-//    }
-//    fileName += "_bs" + boost::str(boost::format("%d") % p.bs_);
-//    fileName += "_w";
-//    if (p.w_ > 0.09) {
-//        fileName += boost::str(boost::format("%.1f") % p.w_);
-//    }
-//    else if (p.w_ > 0.009) {
-//        fileName += boost::str(boost::format("%.2f") % p.w_);
-//    }
-//    else if (p.w_ > 0.0009) {
-//        fileName += boost::str(boost::format("%.3f") % p.w_);
-//    }
-// 
-//    if (p.opt_ == "ngd"){
-//        fileName += "_lambda";
-//        if (p.lambda_ > 0.009) {
-//            fileName += boost::str(boost::format("%.2f") % p.lambda_);
-//        }
-//        else if (p.lambda_ > 0.0009) {
-//            fileName += boost::str(boost::format("%.3f") % p.lambda_);
-//        }
-//        else if (p.lambda_ > 0.00009) {
-//            fileName += boost::str(boost::format("%.4f") % p.lambda_);
-//        }
-//    }
-//    fileName += "_ns";
-//    fileName += boost::str(boost::format("%d") % p.ns_);
-//    fileName += "_"+p.basis_+"basis";
-//    fileName += "_ind" + boost::str(boost::format("%d") % p.h_);
-//    //if (source == "ed_noise"){
-//    //    fileName += "_pR" + boost::str(boost::format("%.2f") % p.pR_);
-//    //    if (p.pR_ == 0.1){
-//    //        fileName += "_pR" + boost::str(boost::format("%.1f") % p.pR_);
-//    //    }
-//    //    fileName += "_pG" + boost::str(boost::format("%.1f") % p.pG_);
-//    //}
-//    //if (source == "amplitude_damping_ed"){
-//    //    fileName += "_pR" + boost::str(boost::format("%.2f") % p.pR_);
-//    //    fileName += "_pG" + boost::str(boost::format("%.1f") % p.pG_);
-//    //}
-//    return fileName;
-//}
-//
-//std::string RbmWeightsName(Parameters & p,std::string &source){
-//    std::string fileName;
-//    fileName = "../data/weights/"+source;//+"/N";
-//    //fileName += boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "/" + NetworkName(p,source);
-//    fileName += "_weights.txt";
-//    return fileName;
-//}
-//
-//std::string RbmWavefunctionName(Parameters & p,std::string &source){
-//    std::string fileName;
-//    fileName = "../data/rbmWavefunctions/";
-//    fileName += source;
-//    //fileName += "/N";
-//    //fileName += boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "/" + NetworkName(p,source);
-//    fileName += "_wavefunction.txt";
-//    return fileName;
-//}
-//
-//std::string InfosName(Parameters & p,std::string &source){
-//    std::string fileName;
-//    fileName = "../data/datasets/";
-//    fileName += source;
-//    //fileName += "/N" + boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "/" + p.model_ + "_N";
-//    fileName += boost::str(boost::format("%d") % p.nsites_);
-//    fileName += "_"+p.basis_+"basis";
-//    fileName += "_infos.txt";
-//    //std::cout<<fileName<<std::endl;
-//    return fileName;
-//}
-//
-//std::string ObservableName(Parameters & p, std::string & type,std::string &source,std::string &obs){
-//    std::string fileName;
-//    fileName = "../data/observables";
-//    //fileName += "/N" + boost::str(boost::format("%d") % p.nsites_);
-//    fileName += type + source;
-//    fileName += "N" + boost::str(boost::format("%d") % p.nsites_);
-//    return fileName;
-//}
-//std::string RbmObserverName(Parameters & p,std::string &source){
-//    std::string fileName;
-//    fileName = "../data/observers/";
-//    fileName += source + "/";
-//    //fileName += "/N"+ boost::str(boost::format("%d") %p.nsites_) +"/";
-//    fileName += NetworkName(p,source);
-//    fileName += "_observer.txt";
-//    return fileName;
-//}
-//
-//
-//}
 
 #endif
