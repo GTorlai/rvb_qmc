@@ -44,6 +44,7 @@ void WriteSimulationInfos(Parameters &pars){
     fout<<"Entanglement geometry = "<<pars.geometry_<<std::endl;
     if(pars.ratio_) fout<<"Using ratio"<<std::endl;
     else            fout<<"Not using ratio"<<std::endl;
+    fout<<"Increment = " <<pars.reg_inc_<<std::endl;
     fout<<"Total number of processors = "<<pars.totalnodes_<<std::endl;
     fout.close();
   }
@@ -59,10 +60,9 @@ template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattic
   if(pars.mynode_==0){
     std::string fname;
     std::string path = SimulationName(pars) + "/regions/";
-    lattice.BuildRegionCylinders(pars.reg_inc_);
     for(int i=0;i<lattice.regions_.size();i++){
-      fname = SimulationName(pars) + "/regions/";
-      fname += "regionA_" + std::to_string(i+1) + ".txt";
+      //fname = SimulationName(pars) + "/regions/";
+      fname = path + "regionA_" + std::to_string(i) + ".txt";
       std::ofstream fout(fname);
       for(int y=0;y<pars.L_;y++) {
         for(int x=0;x<pars.L_;x++) {
@@ -74,8 +74,8 @@ template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattic
     }
     if(pars.ratio_){
       for(int i=0;i<lattice.regions_.size()-1;i++){
-        fname = SimulationName(pars) + "/regions/";
-        fname += "regionX_" + std::to_string(i+2) + ".txt";
+        //fname = SimulationName(pars) + "/regions/";
+        fname = path + "regionX_" + std::to_string(i+1) + ".txt";
         std::ofstream fout(fname);
         for(int y=0;y<pars.L_;y++) {
           for(int x=0;x<pars.L_;x++) {
@@ -85,8 +85,13 @@ template<typename Lattice> void WriteEntanglementRegions(Parameters &pars,Lattic
         }
         fout.close();
       }
-
     }
+    fname = path + "index_regions.txt";
+    std::ofstream fout(fname);
+    for(int i=0;i<lattice.regionIndices_.size();i++){
+      fout << lattice.regionIndices_[i]<<std::endl;
+    }
+    fout.close();
   }
   MPI_Barrier(MPI_COMM_WORLD);
 }

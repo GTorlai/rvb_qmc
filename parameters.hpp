@@ -61,7 +61,7 @@ public:
     for(int i=1;i<argc;i++){
       if(flag==argv[i]) reg_inc_=atoi(argv[i+1]);
     }
-    num_reg_ = int(std::pow(L_,D_)/reg_inc_);
+    //num_reg_ = int(std::pow(L_,D_)/reg_inc_);
   }
 };
 #endif

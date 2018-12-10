@@ -27,9 +27,9 @@ public:
   //std::vector<std::vector<int> > BondsOnSites_;       // 4 bonds on each site
   std::vector<std::vector<int> > SitesOnPlaquettes_;  // 4 sites on each plaquette
  
-  std::vector<int> regionA_;
-
-  std::vector<std::vector<int> > regions_;
+  std::vector<int> regionA_;                          // Single region A
+  std::vector<std::vector<int> > regions_;            // Vector of regions A
+  std::vector<int> regionIndices_;                    // Indices of region A we are interested in
 
   SquareLattice(int L){
     
@@ -48,7 +48,9 @@ public:
   inline int Nbonds() const {return Nbonds_;}
   
   inline int Nplaqs() const {return Nplaqs_;}
-  
+
+  inline int Nregions() const {return regions_.size();}
+
   void Init(){
     
     regionA_.resize(Nsites_/2);
@@ -96,66 +98,6 @@ public:
       neighbours_[Nsites_/2+i][2]=Nsites_/2+Index(Coordinates_[i][0]-1,Coordinates_[i][1]);
       neighbours_[Nsites_/2+i][3]=Nsites_/2+Index(Coordinates_[i][0]  ,Coordinates_[i][1]-1);
     }
-    
-    ////4 bonds on a plaquette
-    ////Real
-    //for(int x=0;x<L_;x++) {
-    //  for(int y=0;y<L_;y++) {
-    //    BondsOnPlaquettes_[Index(x,y)][0]=2*Index(x,y);
-    //    BondsOnPlaquettes_[Index(x,y)][3]=2*Index(x,y)+1;
-    //    BondsOnPlaquettes_[Index(x,y)][1]=2*Index(x+1,y)+1;
-    //    BondsOnPlaquettes_[Index(x,y)][2]=2*Index(x,y+1);
-    //  }
-    //}
-    ////Replica
-    //for(int x=0;x<L_;x++) {
-    //  for(int y=0;y<L_;y++) {
-    //    BondsOnPlaquettes_[Nsites_/2+Index(x,y)][0]=Nbonds_/2+2*Index(x,y);
-    //    BondsOnPlaquettes_[Nsites_/2+Index(x,y)][3]=Nbonds_/2+2*Index(x,y)+1;
-    //    BondsOnPlaquettes_[Nsites_/2+Index(x,y)][1]=Nbonds_/2+2*Index(x+1,y)+1;
-    //    BondsOnPlaquettes_[Nsites_/2+Index(x,y)][2]=Nbonds_/2+2*Index(x,y+1);
-    //  }
-    //}
-
-    ////2 sites on a bond
-    ////Real
-    //for(int x=0;x<L_;x++) {
-    //  for(int y=0;y<L_;y++) {
-    //    if((x+y)%2==0){
-    //      // Horizontal
-    //      SitesOnBonds_[2*Index(x,y)][0] = Index(x,y);
-    //      SitesOnBonds_[2*Index(x,y)][1] = Index(x+1,y);
-    //      // Vertical
-    //      SitesOnBonds_[2*Index(x,y)+1][0] = Index(x,y);
-    //      SitesOnBonds_[2*Index(x,y)+1][1] = Index(x,y+1);
-    //    }
-    //    else{
-    //      // Horizontal
-    //      SitesOnBonds_[2*Index(x,y)][1] = Index(x,y);
-    //      SitesOnBonds_[2*Index(x,y)][0] = Index(x+1,y);
-    //      // Vertical
-    //      SitesOnBonds_[2*Index(x,y)+1][1] = Index(x,y);
-    //      SitesOnBonds_[2*Index(x,y)+1][0] = Index(x,y+1);
-    //    }
-    //  }
-    //}
-    ////Replica
-    //for(int x=0;x<L_;x++) {
-    //  for(int y=0;y<L_;y++) {
-    //    if((x+y)%2==0){
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)][0]   = Nsites_/2+Index(x,y);
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)][1]   = Nsites_/2+Index(x+1,y);
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][0] = Nsites_/2+Index(x,y);
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][1] = Nsites_/2+Index(x,y+1);
-    //    }
-    //    else{
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)][1]   = Nsites_/2+Index(x,y);
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)][0]   = Nsites_/2+Index(x+1,y);
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][1] = Nsites_/2+Index(x,y);
-    //      SitesOnBonds_[Nbonds_/2+2*Index(x,y)+1][0] = Nsites_/2+Index(x,y+1);
-    //    }
-    //  }
-    //}
 
     //Sites on Plaquettes
     //Real
@@ -202,6 +144,12 @@ public:
     }
   }
 
+  void BuildRegions(std::string &geometry,int increment){
+    if(geometry == "cylinder")
+      BuildRegionCylinders(increment);
+    else if (geometry == "square")
+      BuildRegionSquares(increment);
+  }
  
   void BuildRegionCylinders(int increment){
     std::vector<int> single_region;
@@ -223,15 +171,78 @@ public:
         if(y == L_){
           y=0;
           x++;
+          regionIndices_.push_back(regions_.size());
         }
         regions_.push_back(single_region);
       }
     }
   }
 
-
-
-
+  void BuildRegionSquares(int increment){
+    std::vector<int> single_region;
+    // First region
+    single_region.assign(Nsites_/2,0);
+    single_region[0] = 1;
+    regions_.push_back(single_region);
+    regionIndices_.push_back(0);
+    //Other regions
+    for(int l=2;l<L_;l++){
+      if (l<=increment){
+        for(int x=0;x<l;x++){
+          single_region[Index(x,l-1)]=1;
+        }
+        regions_.push_back(single_region);
+        for(int y=0;y<l-1;y++){
+          single_region[Index(l-1,y)]=1;
+        }
+        regions_.push_back(single_region);
+        regionIndices_.push_back(regions_.size()-1);
+      }
+      else {
+        int remainder,steps;
+        steps = std::floor(l / increment);
+        remainder = l % increment;
+        for(int i=0;i<steps;i++){
+          for(int x=0;x<increment;x++){
+            single_region[Index(i*increment+x,l-1)]=1;
+          }
+          regions_.push_back(single_region);
+        }
+        if(remainder>0){
+          for(int x=0;x<remainder;x++){
+            single_region[Index(steps*increment+x,l-1)]=1;
+          }
+          regions_.push_back(single_region);
+        }
+        for(int i=0;i<steps;i++){
+          for(int y=0;y<increment;y++){
+            single_region[Index(l-1,l-1-i*increment-y)]=1;
+          }
+          regions_.push_back(single_region);
+        }
+        if(remainder>0){
+          for(int y=0;y<remainder;y++){
+            single_region[Index(l-1,l-1-steps*increment-y)]=1;
+          }
+          regions_.push_back(single_region);
+        }
+        regionIndices_.push_back(regions_.size()-1);
+      
+      }
+    }
+    
+    //for (int r=0;r<num_regions;r++){
+    //  for(int i=0;i<increment;i++){
+    //    single_region[Index(x,y+i)] = 1;
+    //  }
+    //  y+=increment;
+    //  if(y == L_){
+    //    y=0;
+    //    x++;
+    //  }
+    //  regions_.push_back(single_region);
+    //}
+  }
 
 
 

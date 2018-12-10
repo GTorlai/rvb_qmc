@@ -15,22 +15,24 @@ int main(int argc, char* argv[]){
   MPI_Init(&argc,&argv);
   int mynode;
   int totalnodes;
+  int nregions;
   MPI_Comm_rank(MPI_COMM_WORLD,&mynode);
   MPI_Comm_size(MPI_COMM_WORLD,&totalnodes);
 
   //Parameters
   Parameters pars(totalnodes,mynode);
   pars.ReadParameters(argc,argv);
-  
+  pars.geometry_ = "square"; 
   typedef SquareLattice Lattice;
   Lattice lattice(pars.L_);
+  lattice.BuildRegions(pars.geometry_,pars.reg_inc_);
+  nregions = lattice.Nregions();
   WriteSimulationInfos(pars);
   WriteEntanglementRegions(pars,lattice);
-  std::cout<<pars.num_reg_<<std::endl;
   
-  for(int k=1;k<pars.num_reg_;k++){
+  for(int k=0;k<nregions;k++){
      
-    if(k==1) pars.ratio_=0;
+    if(k==0) pars.ratio_=0;
     else     pars.ratio_=1;
     
     //Create simulation folder
