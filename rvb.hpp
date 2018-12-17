@@ -8,7 +8,7 @@
 #include <iostream>
 #include <random>
 
-//#include "hypercube.hpp"
+#include "cubic_lattice.hpp"
 #include "square_lattice.hpp"
 
 template<class Lattice> class RVB{

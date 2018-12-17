@@ -22,9 +22,6 @@ public:
         
   std::vector<std::vector<int> > Coordinates_;        // (x,y) coordinates of each lattice site
   std::vector<std::vector<int> > neighbours_;         // 4 neighbours of each lattice site
-  //std::vector<std::vector<int> > BondsOnPlaquettes_;  // 4 bonds in each plaquette
-  //std::vector<std::vector<int> > SitesOnBonds_;       // 2 sites on each bond
-  //std::vector<std::vector<int> > BondsOnSites_;       // 4 bonds on each site
   std::vector<std::vector<int> > SitesOnPlaquettes_;  // 4 sites on each plaquette
  
   std::vector<int> regionA_;                          // Single region A
@@ -120,30 +117,6 @@ public:
     }
   }
   
-  void BuildRegionCylinder(int width){
-    if(width == L_){
-      std::cout<<"Region Error: width is equal to the size of the system!"<<std::endl;
-      exit(0);
-    }
-    regionA_.assign(Nsites_/2,0);
-    for (int x=0;x<width;x++){
-      for(int y=0;y<L_;y++){
-        regionA_[Index(x,y)] = 1;
-      }
-    }
-  }
-
-  void BuildRegionRectangle(int X, int Y, int UpperLeftCorner_X,int UpperLeftCorner_Y){
-    regionA_.assign(Nsites_/2,0);
-    int site;
-    for(int x=0;x<X;x++){
-      for(int y=0;y<Y;y++){
-        site = Index(UpperLeftCorner_X+x,UpperLeftCorner_Y+y);
-        regionA_[site] = 1;
-      }
-    }
-  }
-
   void BuildRegions(std::string &geometry,int increment){
     if(geometry == "cylinder")
       BuildRegionCylinders(increment);
@@ -159,7 +132,8 @@ public:
       exit(0);
     }
     else{
-      num_regions = int((Nsites_/2-L_) / increment);
+      //num_regions = int((Nsites_/2-L_) / increment);
+      num_regions = int((Nsites_/4) / increment);
       int x=0;
       int y=0;
       single_region.assign(Nsites_/2,0);
@@ -186,7 +160,7 @@ public:
     regions_.push_back(single_region);
     regionIndices_.push_back(0);
     //Other regions
-    for(int l=2;l<L_;l++){
+    for(int l=2;l<=L_/2;l++){
       if (l<=increment){
         for(int x=0;x<l;x++){
           single_region[Index(x,l-1)]=1;
@@ -199,6 +173,7 @@ public:
         regionIndices_.push_back(regions_.size()-1);
       }
       else {
+        //TODO Fix this bug with ioncrement = 1 
         int remainder,steps;
         steps = std::floor(l / increment);
         remainder = l % increment;
@@ -214,15 +189,17 @@ public:
           }
           regions_.push_back(single_region);
         }
+        steps = std::floor((l-1) / increment);
+        remainder = (l-1) % increment;
         for(int i=0;i<steps;i++){
           for(int y=0;y<increment;y++){
-            single_region[Index(l-1,l-1-i*increment-y)]=1;
+            single_region[Index(l-1,l-2-i*increment-y)]=1;
           }
           regions_.push_back(single_region);
         }
         if(remainder>0){
           for(int y=0;y<remainder;y++){
-            single_region[Index(l-1,l-1-steps*increment-y)]=1;
+            single_region[Index(l-1,l-2-steps*increment-y)]=1;
           }
           regions_.push_back(single_region);
         }
@@ -230,56 +207,8 @@ public:
       
       }
     }
-    
-    //for (int r=0;r<num_regions;r++){
-    //  for(int i=0;i<increment;i++){
-    //    single_region[Index(x,y+i)] = 1;
-    //  }
-    //  y+=increment;
-    //  if(y == L_){
-    //    y=0;
-    //    x++;
-    //  }
-    //  regions_.push_back(single_region);
-    //}
   }
 
-
-
-
-
-
-
-  //void SaveRegions(std::string &path,std::string &geometry,int &ratio){
-  //  std::string fname;
-  //  for(int w=1;w<L_;w++){
-  //    if(geometry == "cylinder")      BuildRegionCylinder(w);
-  //    else if (geometry == "square")  BuildRegionRectangle(w,w,0,0);
-  //    else {
-  //      std::cout<<"Entanglement region not recognized"<<std::endl;
-  //      exit(0);
-  //    }
-  //    fname = path + "regionA_" + std::to_string(w) + ".txt";
-  //    std::ofstream fout(fname);
-  //    SaveRegion(fout);
-  //    fout.close();
-  //  }
-  //  if(ratio){
-  //    for(int w=2;w<L_;w++){
-  //      if(geometry == "cylinder")      BuildRegionCylinder(w-1);
-  //      else if (geometry == "square")  BuildRegionRectangle(w-1,w-1,0,0);
-  //      else {
-  //        std::cout<<"Entanglement region not recognized"<<std::endl;
-  //        exit(0);
-  //      }
-  //      fname = path + "regionX_" + std::to_string(w) + ".txt";
-  //      std::ofstream fout(fname);
-  //      SaveRegion(fout);
-  //      fout.close();
-  //    }
-  //  } 
-
-  //}
 
 
   //Indexing of coordinates
@@ -292,58 +221,6 @@ public:
   
     return L_*y+x;
   
-  }
-  
-  //void SaveRegion(std::ofstream &fout){
-  //  // Printi cylindrical regions
-  //  for(int y=0;y<L_;y++) {
-  //    for(int x=0;x<L_;x++) {
-  //      fout << regionA_[Index(x,y)] << " ";
-  //    }
-  //    fout<<std::endl;
-  //  }
-  //}
-
-  void PrintRegion(){
-   
-    std::ofstream fout("regionA.dat");
-    fout<<L_-1<<std::endl;
-    // Printi cylindrical regions
-    for(int w=1;w<L_;w++){
-      BuildRegionCylinder(w);
-      for(int y=0;y<L_;y++) {
-        for(int x=0;x<L_;x++) {
-          if(regionA_[Index(x,y)] == 1){
-            fout<<"1 ";
-            PRINT_GREEN("o");
-          }
-          else{
-            fout<<"0 ";
-            PRINT_BLUE("o");
-          }
-          std::cout<<"   ";
-        }
-        fout<<std::endl;
-        std::cout<<std::endl;
-      }
-      fout<<"-99"<<std::endl;
-      std::cout<<std::endl<<std::endl;
-    }
-    // Printing squared regions
-    for(int w=1;w<L_;w++){
-      BuildRegionRectangle(w,w,0,0);
-      for(int y=0;y<L_;y++) {
-        for(int x=0;x<L_;x++) {
-          if(regionA_[Index(x,y)] == 1)
-            PRINT_GREEN("o");
-          else
-            PRINT_BLUE("o");
-          std::cout<<"   ";
-        }
-        std::cout<<std::endl;
-      }
-      std::cout<<std::endl<<std::endl;
-    }
   }
 
   //Print Lattice Informations
@@ -411,6 +288,117 @@ public:
       //std::cout << std::endl << std::endl << std::endl;
   
   }
+
+
+  //void BuildRegionCylinder(int width){
+  //  if(width == L_){
+  //    std::cout<<"Region Error: width is equal to the size of the system!"<<std::endl;
+  //    exit(0);
+  //  }
+  //  regionA_.assign(Nsites_/2,0);
+  //  for (int x=0;x<width;x++){
+  //    for(int y=0;y<L_;y++){
+  //      regionA_[Index(x,y)] = 1;
+  //    }
+  //  }
+  //}
+
+  //void BuildRegionRectangle(int X, int Y, int UpperLeftCorner_X,int UpperLeftCorner_Y){
+  //  regionA_.assign(Nsites_/2,0);
+  //  int site;
+  //  for(int x=0;x<X;x++){
+  //    for(int y=0;y<Y;y++){
+  //      site = Index(UpperLeftCorner_X+x,UpperLeftCorner_Y+y);
+  //      regionA_[site] = 1;
+  //    }
+  //  }
+  //}
+
+
+
+
+  //void SaveRegions(std::string &path,std::string &geometry,int &ratio){
+  //  std::string fname;
+  //  for(int w=1;w<L_;w++){
+  //    if(geometry == "cylinder")      BuildRegionCylinder(w);
+  //    else if (geometry == "square")  BuildRegionRectangle(w,w,0,0);
+  //    else {
+  //      std::cout<<"Entanglement region not recognized"<<std::endl;
+  //      exit(0);
+  //    }
+  //    fname = path + "regionA_" + std::to_string(w) + ".txt";
+  //    std::ofstream fout(fname);
+  //    SaveRegion(fout);
+  //    fout.close();
+  //  }
+  //  if(ratio){
+  //    for(int w=2;w<L_;w++){
+  //      if(geometry == "cylinder")      BuildRegionCylinder(w-1);
+  //      else if (geometry == "square")  BuildRegionRectangle(w-1,w-1,0,0);
+  //      else {
+  //        std::cout<<"Entanglement region not recognized"<<std::endl;
+  //        exit(0);
+  //      }
+  //      fname = path + "regionX_" + std::to_string(w) + ".txt";
+  //      std::ofstream fout(fname);
+  //      SaveRegion(fout);
+  //      fout.close();
+  //    }
+  //  } 
+
+  //}
+
+  //void SaveRegion(std::ofstream &fout){
+  //  // Printi cylindrical regions
+  //  for(int y=0;y<L_;y++) {
+  //    for(int x=0;x<L_;x++) {
+  //      fout << regionA_[Index(x,y)] << " ";
+  //    }
+  //    fout<<std::endl;
+  //  }
+  //}
+
+  //void PrintRegion(){
+  // 
+  //  std::ofstream fout("regionA.dat");
+  //  fout<<L_-1<<std::endl;
+  //  // Printi cylindrical regions
+  //  for(int w=1;w<L_;w++){
+  //    BuildRegionCylinder(w);
+  //    for(int y=0;y<L_;y++) {
+  //      for(int x=0;x<L_;x++) {
+  //        if(regionA_[Index(x,y)] == 1){
+  //          fout<<"1 ";
+  //          PRINT_GREEN("o");
+  //        }
+  //        else{
+  //          fout<<"0 ";
+  //          PRINT_BLUE("o");
+  //        }
+  //        std::cout<<"   ";
+  //      }
+  //      fout<<std::endl;
+  //      std::cout<<std::endl;
+  //    }
+  //    fout<<"-99"<<std::endl;
+  //    std::cout<<std::endl<<std::endl;
+  //  }
+  //  // Printing squared regions
+  //  for(int w=1;w<L_;w++){
+  //    BuildRegionRectangle(w,w,0,0);
+  //    for(int y=0;y<L_;y++) {
+  //      for(int x=0;x<L_;x++) {
+  //        if(regionA_[Index(x,y)] == 1)
+  //          PRINT_GREEN("o");
+  //        else
+  //          PRINT_BLUE("o");
+  //        std::cout<<"   ";
+  //      }
+  //      std::cout<<std::endl;
+  //    }
+  //    std::cout<<std::endl<<std::endl;
+  //  }
+  //}
   
 };
 

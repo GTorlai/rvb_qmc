@@ -8,6 +8,7 @@
 //#include <boost/filesystem.hpp>
 #include <iostream>
 #include "square_lattice.hpp"
+#include "cubic_lattice.hpp"
 
 std::string SimulationName(Parameters &pars){
   std::string fname;

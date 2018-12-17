@@ -23,13 +23,23 @@ int main(int argc, char* argv[]){
   Parameters pars(totalnodes,mynode);
   pars.ReadParameters(argc,argv);
   pars.geometry_ = "square"; 
+  //pars.geometry_ = "cylinder"; 
   typedef SquareLattice Lattice;
+  //typedef CubicLattice Lattice;
   Lattice lattice(pars.L_);
   lattice.BuildRegions(pars.geometry_,pars.reg_inc_);
   nregions = lattice.Nregions();
+  //lattice.Print();
   WriteSimulationInfos(pars);
   WriteEntanglementRegions(pars,lattice);
+
+  //// QMC
+  QMC<Lattice> qmc(lattice,pars);
   
+  // Burn in
+  qmc.Equilibrate();
+
+  // Measure
   for(int k=0;k<nregions;k++){
      
     if(k==0) pars.ratio_=0;
@@ -37,11 +47,9 @@ int main(int argc, char* argv[]){
     
     //Create simulation folder
     //SetupSimulationDir(pars);
-
-    //Quantum Monte Carlo
-    QMC<Lattice> qmc(lattice,pars);
+    qmc.Reset();
     qmc.LoadRegion(pars,k);
-    qmc.QMCrun();
+    qmc.Run();
     
     //Data Analysis
     Stats stats(pars.nMC_);
@@ -63,5 +71,6 @@ int main(int argc, char* argv[]){
   //  double time_s = float(total_time_ticks)/double(CLOCKS_PER_SEC);
   //  std::cout<<std::endl<<"Region # = " << pars.regionID_ << "  -  Time elapsed: " << time_s << " seconds." << std::endl;
   //}
+  
   MPI_Finalize();
 }

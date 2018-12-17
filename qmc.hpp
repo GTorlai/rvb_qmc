@@ -57,6 +57,13 @@ public:
     bra_.SetState(ket_);
   }
  
+  void Reset(){
+    regionA_.clear();
+    regionX_.clear();
+    SpinSpinCorrelation_.clear();
+    RenyiEntropy_.clear();
+  }
+
   void LoadRegion(Parameters &pars,int regionID){
     std::string fname;
     std::string path = SimulationName(pars) + "/regions/";
@@ -81,12 +88,15 @@ public:
       ket_.SetRegion(regionX_);
     }
   }
-  void QMCrun() {
+
+  void Equilibrate() {
     for (int i=0;i<nburn_;i++){
       Sweep();
     }
+  }
+  
+  void Run() {
     for (int i=0;i<nsamples_node_;i++){
-      //std::cout<<"Sweep # "<<i<<std::endl<<std::endl;
       Sweep();
       GetSpinSpinCorrelation();
       GetEntanglementEntropy(); 
