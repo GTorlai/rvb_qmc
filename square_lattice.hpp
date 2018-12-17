@@ -152,7 +152,7 @@ public:
     }
   }
 
-  void BuildRegionSquares(int increment){
+  void BuildRegionSquares(int max_increment){
     std::vector<int> single_region;
     // First region
     single_region.assign(Nsites_/2,0);
@@ -161,7 +161,7 @@ public:
     regionIndices_.push_back(0);
     //Other regions
     for(int l=2;l<=L_/2;l++){
-      if (l<=increment){
+      if (l<=max_increment){
         for(int x=0;x<l;x++){
           single_region[Index(x,l-1)]=1;
         }
@@ -173,42 +173,129 @@ public:
         regionIndices_.push_back(regions_.size()-1);
       }
       else {
-        //TODO Fix this bug with ioncrement = 1 
         int remainder,steps;
-        steps = std::floor(l / increment);
-        remainder = l % increment;
-        for(int i=0;i<steps;i++){
-          for(int x=0;x<increment;x++){
-            single_region[Index(i*increment+x,l-1)]=1;
+        steps = std::floor(l / max_increment);
+        remainder = l % max_increment;
+        if(remainder == 0){
+          for(int i=0;i<steps;i++){
+            for(int x=0;x<max_increment;x++){
+              single_region[Index(i*max_increment+x,l-1)]=1;
+            }
+            regions_.push_back(single_region);
+          }
+        }
+        else{
+          for(int i=0;i<steps-1;i++){
+            for(int x=0;x<max_increment;x++){
+              single_region[Index(i*max_increment+x,l-1)]=1;
+            }
+            regions_.push_back(single_region);
+          }
+          int new_size = max_increment + remainder;
+          int broken_step = std::floor(new_size/2);
+          int new_remainder = new_size % 2;
+          for(int x=0;x<broken_step;x++){
+            single_region[Index((steps-1)*max_increment+x,l-1)]=1;
+          }
+          regions_.push_back(single_region);
+          for(int x=0;x<broken_step+new_remainder;x++){
+            single_region[Index((steps-1)*max_increment+broken_step+x,l-1)]=1;
           }
           regions_.push_back(single_region);
         }
-        if(remainder>0){
-          for(int x=0;x<remainder;x++){
-            single_region[Index(steps*increment+x,l-1)]=1;
+        steps = std::floor((l-1) / max_increment);
+        remainder = (l-1) % max_increment;
+        if(remainder == 0){
+          for(int i=0;i<steps;i++){
+            for(int y=0;y<max_increment;y++){
+              single_region[Index(l-1,l-2-i*max_increment-y)]=1;
+            }
+            regions_.push_back(single_region);
           }
-          regions_.push_back(single_region);
         }
-        steps = std::floor((l-1) / increment);
-        remainder = (l-1) % increment;
-        for(int i=0;i<steps;i++){
-          for(int y=0;y<increment;y++){
-            single_region[Index(l-1,l-2-i*increment-y)]=1;
+        else{
+          for(int i=0;i<steps-1;i++){
+            for(int y=0;y<max_increment;y++){
+              single_region[Index(l-1,l-2-i*max_increment-y)]=1;
+            }
+            regions_.push_back(single_region);
+          }
+          int new_size = max_increment + remainder;
+          int broken_step = std::floor(new_size/2);
+          int new_remainder = new_size % 2;
+          
+          for(int y=0;y<broken_step;y++){
+            single_region[Index(l-1,l-2-(steps-1)*max_increment-y)]=1;
           }
           regions_.push_back(single_region);
-        }
-        if(remainder>0){
-          for(int y=0;y<remainder;y++){
-            single_region[Index(l-1,l-2-steps*increment-y)]=1;
+          for(int y=0;y<broken_step+new_remainder;y++){
+            single_region[Index(l-1,l-2-(steps-1)*max_increment-broken_step-y)]=1;
           }
           regions_.push_back(single_region);
+          
         }
         regionIndices_.push_back(regions_.size()-1);
-      
       }
     }
   }
 
+  
+//  void BuildRegionSquares(int increment){
+//    std::vector<int> single_region;
+//    // First region
+//    single_region.assign(Nsites_/2,0);
+//    single_region[0] = 1;
+//    regions_.push_back(single_region);
+//    regionIndices_.push_back(0);
+//    //Other regions
+//    for(int l=2;l<=L_/2;l++){
+//      if (l<=increment){
+//        for(int x=0;x<l;x++){
+//          single_region[Index(x,l-1)]=1;
+//        }
+//        regions_.push_back(single_region);
+//        for(int y=0;y<l-1;y++){
+//          single_region[Index(l-1,y)]=1;
+//        }
+//        regions_.push_back(single_region);
+//        regionIndices_.push_back(regions_.size()-1);
+//      }
+//      else {
+//        int remainder,steps;
+//        steps = std::floor(l / increment);
+//        remainder = l % increment;
+//        for(int i=0;i<steps;i++){
+//          for(int x=0;x<increment;x++){
+//            single_region[Index(i*increment+x,l-1)]=1;
+//          }
+//          regions_.push_back(single_region);
+//        }
+//        if(remainder>0){
+//          for(int x=0;x<remainder;x++){
+//            single_region[Index(steps*increment+x,l-1)]=1;
+//          }
+//          regions_.push_back(single_region);
+//        }
+//        steps = std::floor((l-1) / increment);
+//        remainder = (l-1) % increment;
+//        for(int i=0;i<steps;i++){
+//          for(int y=0;y<increment;y++){
+//            single_region[Index(l-1,l-2-i*increment-y)]=1;
+//          }
+//          regions_.push_back(single_region);
+//        }
+//        if(remainder>0){
+//          for(int y=0;y<remainder;y++){
+//            single_region[Index(l-1,l-2-steps*increment-y)]=1;
+//          }
+//          regions_.push_back(single_region);
+//        }
+//        regionIndices_.push_back(regions_.size()-1);
+//      
+//      }
+//    }
+//  }
+//
 
 
   //Indexing of coordinates
