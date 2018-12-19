@@ -98,7 +98,7 @@ public:
   void Run() {
     for (int i=0;i<nsamples_node_;i++){
       Sweep();
-      GetSpinSpinCorrelation();
+      //GetSpinSpinCorrelation();
       GetEntanglementEntropy(); 
     }
   }

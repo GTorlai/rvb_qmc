@@ -17,7 +17,11 @@ public:
   std::vector<std::vector<int> > Coordinates_;        // (x,y) coordinates of each lattice site
   std::vector<std::vector<int> > neighbours_;         // 4 neighbours of each lattice site
   std::vector<std::vector<int> > SitesOnPlaquettes_;  // 4 sites on each plaquette
-  
+ 
+  std::vector<int> regionA_;                          // Single region A
+  std::vector<std::vector<int> > regions_;            // Vector of regions A
+  std::vector<int> regionIndices_;                    // Indices of region A we are interested in
+ 
   CubicLattice(int L){
     
     L_ = L;
@@ -37,9 +41,13 @@ public:
 
   inline int Nplaqs() const {return Nplaqs_;}
 
+  inline int Nregions() const {return regions_.size();}
+
   void Init(){
     int counter[3]={0,0,0};
-    
+ 
+    regionA_.resize(Nsites_/2);
+   
     Coordinates_.resize(Nsites_,std::vector<int>(3));
     neighbours_.resize(Nsites_,std::vector<int>(6));
     SitesOnPlaquettes_.resize(Nplaqs_,std::vector<int>(4));
