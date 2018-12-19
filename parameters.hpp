@@ -8,21 +8,23 @@ class Parameters{
 
 public:
   
-  int D_;               // Lattice dimension
-  int L_;               // Linea size of the lattice
-  int Wx_;              // Topological sector in X
-  int Wy_;              // Topological sector in Y
-  int nburn_;           // Number of burni-in steps
-  long long int nMC_;   // Number of measurements
-  int ratio_;           // Ration flag
-  int reg_inc_;         // Region increment
-  int num_reg_;         // Number of regions
-  int seed_bra_;        // Seed of the bra       
-  int seed_ket_;        // Seed of the ket
-  int seed_qmc_;        // Seed of the qmc
-  int totalnodes_;      // Number of processors
-  int mynode_;          // Processor ID
-  std::string geometry_;// Entanglement geometry
+  int D_;                 // Lattice dimension
+  int L_;                 // Linea size of the lattice
+  int Wx_;                // Topological sector in X
+  int Wy_;                // Topological sector in Y
+  int nburn_;             // Number of burn-in steps
+  long long int nMC_;     // Number of measurements per bin
+  int nbins_;             // Number of bins
+  int ratio_;             // Ration flag
+  int reg_inc_;           // Region increment
+  int num_reg_;           // Number of regions
+  int seed_bra_;          // Seed of the bra       
+  int seed_ket_;          // Seed of the ket
+  int seed_qmc_;          // Seed of the qmc
+  int totalnodes_;        // Number of processors
+  int mynode_;            // Processor ID
+  std::string geometry_;  // Entanglement geometry
+  int sim_id_; 
 
   Parameters(int &totalnodes,int &mynode) {
     D_ = 2;
@@ -38,6 +40,8 @@ public:
     seed_qmc_ = 13220+1663*mynode;
     totalnodes_ = totalnodes;
     mynode_ = mynode;
+    nbins_ = totalnodes_;
+    sim_id_ = 1;
     geometry_ = "cylinder";
   }
     
@@ -49,19 +53,22 @@ public:
     for(int i=1;i<argc;i++){
       if(flag==argv[i]) L_=atoi(argv[i+1]);
     }
-    flag = "-nMC";
+    flag = "-mc";
     for(int i=1;i<argc;i++){
       if(flag==argv[i]) nMC_=atoll(argv[i+1]);
     }
-    flag = "-r";
+    flag = "-bins";
     for(int i=1;i<argc;i++){
-      if(flag==argv[i]) ratio_=atoi(argv[i+1]);
+      if(flag==argv[i]) nbins_=atoi(argv[i+1]);
     }
     flag = "-reg";
     for(int i=1;i<argc;i++){
       if(flag==argv[i]) reg_inc_=atoi(argv[i+1]);
     }
-    //num_reg_ = int(std::pow(L_,D_)/reg_inc_);
+    flag = "-id";
+    for(int i=1;i<argc;i++){
+      if(flag==argv[i]) sim_id_=atoi(argv[i+1]);
+    }
   }
 };
 #endif

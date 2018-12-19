@@ -40,6 +40,7 @@ public:
   }
 
   void Reset(){
+    
   }
 
   void SimpleStat(std::vector<double> &data){

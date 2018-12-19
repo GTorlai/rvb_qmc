@@ -47,7 +47,8 @@ public:
     Wy_ = pars.Wy_;
     ratio_ = pars.ratio_;
     rgen_.seed(pars.seed_qmc_);
-    nsamples_node_ = std::ceil(double(pars.nMC_)/double(pars.totalnodes_));
+    //nsamples_node_ = std::ceil(double(pars.nMC_)/double(pars.totalnodes_));
+    nsamples_node_ = pars.nMC_;
     Init();
   }
 
